@@ -1,5 +1,7 @@
 ## BUCKET LIST
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2d56324e6b624ab6a30da81c23cb7851)](https://www.codacy.com/app/dmkitui/BucketList?utm_source=github.com&utm_medium=referral&utm_content=dmkitui/BucketList&utm_campaign=badger)
+
 TODO: Write a project description
 
 ## Installation
