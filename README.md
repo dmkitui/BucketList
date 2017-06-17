@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/dmkitui/BucketList.svg?branch=master)](https://travis-ci.org/dmkitui/BucketList)
+
 ## BUCKET LIST
 
 TODO: Write a project description
