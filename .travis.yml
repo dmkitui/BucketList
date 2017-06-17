@@ -11,6 +11,6 @@ env:
 addons:
   postgresql: "9.4"
 script:
-  - coverage run --omit=*/tests/* --source=hc manage.py test
+  - coverage run --omit=*/tests/* --source=app manage.py test
 after_success: coveralls
 cache: pip
