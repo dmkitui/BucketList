@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/dmkitui/BucketList.svg?branch=master)](https://travis-ci.org/dmkitui/BucketList)
+[![Coverage Status](https://coveralls.io/repos/github/dmkitui/BucketList/badge.svg?branch=master)](https://coveralls.io/github/dmkitui/BucketList?branch=master)
 
 ## BUCKET LIST
 
