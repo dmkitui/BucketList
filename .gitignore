@@ -10,15 +10,6 @@ __pycache__/
 # Distribution / packaging
 .Python
 .idea
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-
 # pyenv
 .python-version
 
@@ -29,11 +20,3 @@ instance/
 env/
 venv/
 ENV/
-
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-BL-env/

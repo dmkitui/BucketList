@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/dmkitui/BucketList.svg?branch=master)](https://travis-ci.org/dmkitui/BucketList)
+[![Coverage Status](https://coveralls.io/repos/github/dmkitui/BucketList/badge.svg?branch=master)](https://coveralls.io/github/dmkitui/BucketList?branch=master)
+[![Code Issues](https://www.quantifiedcode.com/api/v1/project/c444bb9b216c4c27b31602882cc93d98/badge.svg)](https://www.quantifiedcode.com/app/project/c444bb9b216c4c27b31602882cc93d98)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2d56324e6b624ab6a30da81c23cb7851)](https://www.codacy.com/app/dmkitui/BucketList?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dmkitui/BucketList&amp;utm_campaign=Badge_Grade)
+
 ## BUCKET LIST
 
 TODO: Write a project description
