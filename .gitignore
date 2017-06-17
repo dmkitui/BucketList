@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+.DS_Store
+*.pyc
+*.pyo
+
+# Distribution / packaging
+.Python
+.idea
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+
+# pyenv
+.python-version
+
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+BL-env/
