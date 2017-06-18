@@ -1,11 +1,4 @@
 import unittest
-import sys
-import os
-
-# from app import create_app, db
-# from app import create_app, db
-# topdir = os.path.join(os.path.dirname(__file__), "..")
-# sys.path.append(topdir)
 from base import BaseTestCase
 
 
