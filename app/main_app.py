@@ -21,13 +21,10 @@ def create_app(config_name):
     def bucketlists():
         '''method to create or return list of bucketlist items'''
         if request.method == 'POST':
-            print('XXXXX  1')
             name = str(request.data.get('list_item_name', ''))
-            print('Name:', name)
             if name:
                 bucketlist = BucketList(list_item_name=name)
                 bucketlist.save()
-                print('XXXXX  1.2')
                 response = jsonify({
                     'id': bucketlist.id,
                     'list_item_name': bucketlist.list_item_name,
@@ -37,22 +34,21 @@ def create_app(config_name):
                 response.status_code = 201
                 return response
 
-            elif request.method == 'GET':
-                print('XXXXX   2')
-                bucketlists = BucketList.get_all()
-                results = []
+        elif request.method == 'GET':
+            bucketlists = BucketList.get_all()
+            results = []
 
-                for bucketlist in bucketlists:
-                    obj = {
-                    'id': bucketlist.id,
-                    'list_item_name': bucketlist.list_item_name,
-                    'date_posted': bucketlist.date_posted,
-                    'date_modified': bucketlist.date_modified
-                    }
-                    results.append(obj)
-                response = jsonify(results)
-                response.status_code = 200
-                return response
+            for bucketlist in bucketlists:
+                obj = {
+                'id': bucketlist.id,
+                'list_item_name': bucketlist.list_item_name,
+                'date_posted': bucketlist.date_posted,
+                'date_modified': bucketlist.date_modified
+                }
+                results.append(obj)
+            response = jsonify(results)
+            response.status_code = 200
+            return response
 
     @app.route('/bucketlists/<int:id>', methods=['GET', 'PUT', 'DELETE'])
     def bucketlist_manipulations(id, **kwargs):
@@ -64,10 +60,10 @@ def create_app(config_name):
         if request.method == 'DELETE':
             bucketlist.delete()
 
-            return { 'message': 'Bucketlist deleted successfully'.format(bucketlist.id)}, 200
+            return { 'message': 'Bucketlist item No {} deleted successfully'.format(bucketlist.id)}, 200
 
         elif request.method == 'PUT':
-            name = str(request.data.get('name', ''))
+            name = str(request.data.get('list_item_name', ''))
             bucketlist.list_item_name = name
             bucketlist.save()
 
@@ -80,7 +76,7 @@ def create_app(config_name):
             response.status_code = 200
             return response
 
-        else:
+        elif request.method == 'GET':
 
             response = jsonify({
                 'id': bucketlist.id,
