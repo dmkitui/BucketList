@@ -13,13 +13,13 @@ class UsersModelTestCase(BaseTestCase):
         '''Test for a user registration'''
         response = self.user_registration('user@gmail.com', 'password', 'password')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('Registration successful, welcome to Bucketlist', response.data)
+        self.assertIn(b'Registration successful, welcome to Bucketlist', response.data)
 
     def test_invalid_registration_wrong_passwords_match(self):
         '''Tests a wrong password match'''
         response = self.user_registration('user@gmail.com', 'password', 'PASSWORD')
         self.assertEqual(response.status_code, 401)
-        self.assertIn('Passwords do not match', response.data)
+        self.assertIn(b'Password fields do not match', response.data)
 
     def test_duplicate_user_registration(self):
         '''Tests to prevent an already registred email being used again'''
@@ -29,7 +29,34 @@ class UsersModelTestCase(BaseTestCase):
         #Register using same email address again
         response = self.user_registration('dan@gmail.com', 'password', 'password')
         self.assertEqual(response.status_code, 202)     # The request was received, but wont be acted uopn
-        self.assertIn('Registration Failure. User dan@gmail.com already registered', response.data)
+        self.assertIn(b'Registration Failure. User dan@gmail.com already registered', response.data)
+
+    def test_user_login_not_registered(self):
+        '''Test for login by unregistered user'''
+        response = self.user_login('notregistered@example.com', 'qwerty')  # Create new user
+        self.assertEqual(response.status_code, 401)
+        self.assertIn(b'User notregistered@example.com does not exist. Register to access the service', response.data)
+
+    def test_user_login_valid_credentials(self):
+        '''test for a successful user login'''
+
+        response = self.user_registration('newuser@gmail.com', '123456', '123456')  # Create new user
+        self.assertEqual(response.status_code, 201)
+
+        # Login
+        response = self.user_login('newuser@gmail.com', '123456')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Login successful', response.data)
+
+    def test_user_login_invalid_password(self):
+        '''Test for login with invalid password'''
+        response = self.user_registration('newuser1@gmail.com', '123456', '123456')  # Create new user
+        self.assertEqual(response.status_code, 201)
+
+        # Login with invalid credentials
+        response = self.user_login('newuser1@gmail.com', 'wrong_password')
+        self.assertEqual(response.status_code, 401)
+        self.assertIn(b'Invalid email or password', response.data)
 
     def tearDown(self):
         '''Clean up the test environment'''
