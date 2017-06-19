@@ -1,8 +1,6 @@
 from flask_api import FlaskAPI
 from flask_sqlalchemy import SQLAlchemy
-
-
-# local import
+from string import ascii_lowercase, ascii_uppercase, digits
 from instance.config import app_config
 from flask import request, jsonify, abort
 # initialize sql-alchemy
@@ -51,6 +49,13 @@ def create_app(config_name):
                 response.status_code = 401
                 return response
 
+            if not strong_password(user_password):
+                response = jsonify({
+                    'message': 'Weak password. Make sure password contains at least 8 characters, an uppercase letter, and a digit'
+                })
+                response.status_code = 401
+                return response
+
             try:
                 new_user = User(user_email=user_email, user_password=user_password)
                 new_user.save()
@@ -68,6 +73,12 @@ def create_app(config_name):
                 })
                 response.status_code = 401
                 return response
+
+    def strong_password(password):
+        return len(password) >= 8 and \
+               any(upper in password for upper in ascii_uppercase) and \
+               any(lower in password for lower in ascii_lowercase) and \
+               any(digit in password for digit in digits)
 
 
     @app.route('/api/v1/auth/login/', methods=['POST'])
