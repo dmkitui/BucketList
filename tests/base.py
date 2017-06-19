@@ -13,6 +13,8 @@ class BaseTestCase(unittest.TestCase):
         self.client = self.app.test_client
 
         with self.app.app_context():  # Bind the app to current context
+            db.session.close()
+            db.drop_all()
             db.create_all()  # create the tables
 
 
@@ -22,10 +24,10 @@ class BaseTestCase(unittest.TestCase):
         Helper method to register a new user
         :param email: user email address
         :param password: user password
-        :param confrim_password: user password entered gain to confirm
-        :return: POST to the regoster endpoint
+        :param confrim_password: user password entered again to confirm
+        :return: POST to the api/auth/register endpoint
         '''
-        return self.app.post('/register', data=dict(email=email, password=password, confirm_password=confirm_password, follow_redirects=True))
+        return self.client().post('/api/v1/auth/register/', data=dict(user_email=email, user_password=password, confirm_password=confirm_password, follow_redirects=True))
 
 
     def user_login(self, email, password):
@@ -35,7 +37,7 @@ class BaseTestCase(unittest.TestCase):
         :param password: user password
         :return: POST to the login endpoint
         '''
-        return self.app.post('/login', data=dict(email=email, password=password, follow_redirects=True))
+        return self.client().post('/api/v1/auth/login/', data=dict(user_email=email, user_password=password, follow_redirects=True))
 
 
     def user_logout(self):
@@ -43,4 +45,4 @@ class BaseTestCase(unittest.TestCase):
         Helper method to logout a user
         :return: GET to the logout endpoint
         '''
-        return self.app.get('/logout', follow_redirects=True)
+        return self.client().get('/api/v1/auth/logout/', follow_redirects=True)
