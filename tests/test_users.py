@@ -73,6 +73,7 @@ class UsersModelTestCase(BaseTestCase):
         self.assertEqual(status_code, 401)
         self.assertTrue(response['message'] == 'Invalid email or password')
 
+
     def test_login_invalid_token(self):
         '''test for when a user logins invalid token'''
         pass
