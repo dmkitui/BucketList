@@ -46,7 +46,7 @@ class BucketList_DB(BaseBucketListCase):
         self.assertTrue(response3.status_code == 200)
         self.assertIn('Learn Programming', str(response3.data))
 
-    def test_add_buckelist_items(self):
+    def test_add_new_buckelist_items(self):
         '''Test add items to bucketlist'''
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
 
@@ -57,22 +57,44 @@ class BucketList_DB(BaseBucketListCase):
 
         response2 = self.client().put('/api/v1/bucketlists/1', headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Python django'))
 
-        self.assertTrue(response2.status_code == 201)
+        self.assertTrue(response2.status_code == 200)
         self.assertIn('Python django', str(response2.data))
+
+
+    def test_add_already_existing_buckelist_items(self):
+        '''Test add items to bucketlist'''
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        token = response['access_token']
+
+        self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+        self.client().put('/api/v1/bucketlists/1', headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Python django'))
+
+        response2 = self.client().put('/api/v1/bucketlists/1', headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Python django'))
+
+        self.assertEqual(response2.status_code, 409)
+        self.assertIn('Item already in bucketlist.', str(response2.data))
+
 
 
 
     def test_bucketlist_delete_list_item(self):
         '''Test it can delete an existing bucketlist item'''
-        pass
 
-        # self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
-        #
-        # response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
-        # token = response['access_token']
-        #
-        # response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
-        # self.assertEqual(response2.status_code, 201)
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        token = response['access_token']
+
+        response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+        self.assertEqual(response2.status_code, 201)
+
+        data = json.loads(response2.data.decode())
+
+        response2 = self.client().delete('/api/v1/bucketlists/{}'.format(data['id']), headers=dict(Authorization="Bearer " + token))
+
+        self.assertIn('Bucketlist item No {} deleted successfully', str(response2))
 
 
     def test_bucketlist_edit_list_item(self):
