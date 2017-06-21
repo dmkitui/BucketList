@@ -1,6 +1,7 @@
 import unittest
-from .base import BaseBucketListCase
 import json
+
+from base import BaseBucketListCase
 
 
 class BucketList_DB(BaseBucketListCase):
