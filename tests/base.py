@@ -1,5 +1,6 @@
 import unittest
 import json
+from app.models import User, BucketListItems, Bucketlists
 
 from app.main_app import create_app, db
 
@@ -12,6 +13,11 @@ class BaseTestCase(unittest.TestCase):
         self.app = create_app(config_name='testing')
         self.client = self.app.test_client
         db.create_all()  # create the tables
+
+        # self.user_email = 'dan@example.org'
+        # self.user_password = 'password0122'
+        # self.person = User(self.user_email, self.user_password)
+        # self.person.save()
 
 
 
