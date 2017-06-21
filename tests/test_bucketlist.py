@@ -92,9 +92,10 @@ class BucketList_DB(BaseBucketListCase):
 
         data = json.loads(response2.data.decode())
 
-        response2 = self.client().delete('/api/v1/bucketlists/{}'.format(data['id']), headers=dict(Authorization="Bearer " + token))
+        response3 = self.client().delete('/api/v1/bucketlists/{}'.format(data['id']), headers=dict(Authorization="Bearer " + token))
+        data2 = json.loads(response3.data.decode())
 
-        self.assertIn('Bucketlist item No {} deleted successfully', str(response2))
+        self.assertEqual('Bucketlist item No {} deleted successfully'.format(data['id']), data2['message'])
 
 
     def test_bucketlist_edit_list_item(self):
