@@ -1,5 +1,6 @@
 from .main_app import db
 from flask_bcrypt import Bcrypt
+from flask import jsonify
 import jwt
 from datetime import datetime, timedelta
 from instance import config
@@ -14,7 +15,6 @@ class User(db.Model):
     user_email = db.Column(db.String(256), nullable=False, unique=True)
     user_password = db.Column(db.String(256), nullable=False)
     date_registered = db.Column(db.DateTime, default=db.func.now())
-    bucketlists = db.relationship('BucketList', order_by='BucketList.id', cascade='all, delete-orphan')
 
     def __init__(self, user_email, user_password):
         '''Initialize user with details'''
@@ -43,42 +43,15 @@ class User(db.Model):
         '''
         try:
             payload = {
-             'expiration_time': self.date_string((datetime.utcnow() + timedelta(minutes=10))),
-             'iat': self.date_string(datetime.utcnow()),
-             'sub': user_id
+             'exp': datetime.utcnow() + timedelta(seconds=300),
+             'iat': datetime.utcnow(),  # Time the jwt was made
+             'sub': user_id  # Subject of the payload
             }
-            print(config.Config.SECRET)
             jwt_string = jwt.encode(payload, config.Config.SECRET, algorithm='HS256')
             return jwt_string
 
         except Exception as error:
             return error
-
-    @staticmethod
-    def decode_token(token):
-        '''
-        method to decode the access token during authorization
-        :param token: User token from authorization header
-        :return: the decoded token
-        '''
-        try:
-            payload = jwt.decode(token, app_config.get('SECRET'))
-            return payload['sub']
-
-        except jwt.ExpiredSignatureError: # when token is expired
-            return 'Expired token. Please login again to get a new token'
-
-        except jwt.InvalidTokenError:  # When token is invalid
-            return 'Invlaid token. Register or Login to access the service'
-
-    @staticmethod
-    def date_string(date_var):
-        '''Static method to convert dates from datetime format to string'''
-        if isinstance(date_var, datetime):
-            print(date_var)
-            return date_var.strftime('%Y-%m-%d %H:%M:%S')
-
-
 
 
     def get_user(self):
@@ -95,38 +68,94 @@ class User(db.Model):
         db.session.remove(self)
         db.session.commit()
 
-class BucketList(db.Model):
-    '''The bucketlist table'''
 
-    ___tablename__ = 'bucketlists'
+class BucketlistBaseModel(db.Model):
+    '''Base class for the bucketlists, and bucketlistitems models'''
 
-    id = db.Column(db.Integer, primary_key=True)
-    list_item_name = db.Column(db.String(255))  # Name of the bucket list item
-    date_posted = db.Column(db.DateTime, default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
-    created_by = db.Column(db.Integer, db.ForeignKey(User.id))
-    done = db.Column(db.Boolean, default=False)
+    __abstract__ = True  # Abstract class for use only in overriding classes
 
-    def __init__(self, list_item_name, created_by):
-        '''method to initialize the list item with list_item_name and creator'''
-        self.list_item_name = list_item_name
-        self.created_by = created_by
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    date_created = db.Column(db.DateTime, default=db.func.now())
+    date_modified = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
     def save(self):
-        '''Method to add a bucketlist item or save changes to an existing one'''
+        '''Method to save a new item'''
         db.session.add(self)
         db.session.commit()
 
-    @staticmethod
-    def get_all(user_id):
-        '''Returns all bucketlist objects created by the supplied user.id'''
-        return BucketList.query.filter_by(created_by=user_id)
+        return self
+
+    def update(self):
+        '''Method to apply changes to an item, user'''
+        db.session.commit()
+        return self
 
     def delete(self):
-        '''Deletes the current bucket list item from database'''
+        '''function to remove an item from db'''
         db.session.delete(self)
         db.session.commit()
 
-    def __repr__(self):
-        '''Returns the list item representation'''
-        return '<Bucketlist: {}>'.format(self.list_item_name)
+    def get_all(self, queryset):
+        '''method to return all items/objects'''
+
+        output = []
+        for result in queryset:
+            output.append(result.get())
+
+        return output
+
+class BucketListItems(BucketlistBaseModel):
+    '''The bucketlist items table'''
+
+    ___tablename__ = 'bucketlist_items'
+
+    item_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id', ondelete='CASCADE'))
+    list_item_name = db.Column(db.String(255))  # Name of the bucket list item
+    done = db.Column(db.Boolean, default=False)
+
+    def __init__(self, name, bucketlist_id):
+        self.list_item_name = name
+        self.item_id = bucketlist_id
+
+    @staticmethod
+    def get(item_id):
+        return BucketListItems.query.filter_by(item_id=item_id)
+
+    @staticmethod
+    def list_response(bucket_item_id):
+
+        items = BucketListItems.get(bucket_item_id)
+        list_output = []
+
+        if items:
+            for item in items:
+                obj = {
+                    'id': item.id,
+                    'list_name': item.list_item_name,
+                    'done': item.done
+                }
+                list_output.append(obj)
+
+        return list_output
+
+
+class Bucketlists(BucketlistBaseModel):
+    '''Bucketlist items table'''
+    __tablename__ = 'bucketlists'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(256))
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    def __init__(self, name, owner_id):
+        self.name = name
+        self.owner_id = owner_id
+
+    @staticmethod
+    def get(user_id):
+        '''method to return a bucketlist'''
+        return Bucketlists.query.filter_by(owner_id=user_id)
+
+    def __str__(self):
+        return 'ID: {id} \n Name: {name} \n items: {items} \n date_created: {date_created} \n date_modified: {date_modified}'.format(name=self.name, id=self.id, date_created=self.date_created,
+                                                                                                                      date_modified=self.date_modified, items=[])
