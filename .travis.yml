@@ -3,7 +3,7 @@ python:
   - "3.6"
 install:
     - pip install -r requirements.txt
-    - pip install braintree coveralls mock mysqlclient pytest
+    - pip install braintree coveralls mock mysqlclient pytest-cov
 env:
   - DB=postgres
 addons:
