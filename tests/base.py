@@ -1,6 +1,6 @@
 import unittest
+import json
 
-# from app import create_app, db
 from app.main_app import create_app, db
 
 class BaseTestCase(unittest.TestCase):
@@ -25,10 +25,11 @@ class BaseTestCase(unittest.TestCase):
         :param email: user email address
         :param password: user password
         :param confrim_password: user password entered again to confirm
-        :return: POST to the api/auth/register endpoint
+        :return: POST response to the api/auth/register endpoint
         '''
-        return self.client().post('/api/v1/auth/register/', data=dict(user_email=email, user_password=password, confirm_password=confirm_password, follow_redirects=True))
+        response = self.client().post('/api/v1/auth/register', data=dict(user_email=email, user_password=password, confirm_password=confirm_password, follow_redirects=True))
 
+        return json.loads(response.data.decode()), response.status_code
 
     def user_login(self, email, password):
         '''
@@ -37,7 +38,10 @@ class BaseTestCase(unittest.TestCase):
         :param password: user password
         :return: POST to the login endpoint
         '''
-        return self.client().post('/api/v1/auth/login/', data=dict(user_email=email, user_password=password, follow_redirects=True))
+
+        response = self.client().post('/api/v1/auth/login', data=dict(user_email=email, user_password=password, follow_redirects=True))
+
+        return json.loads(response.data.decode()), response.status_code
 
 
     def user_logout(self):
@@ -45,4 +49,4 @@ class BaseTestCase(unittest.TestCase):
         Helper method to logout a user
         :return: GET to the logout endpoint
         '''
-        return self.client().get('/api/v1/auth/logout/', follow_redirects=True)
+        return self.client().get('/api/v1/auth/logout', follow_redirects=True)
