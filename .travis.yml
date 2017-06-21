@@ -3,7 +3,7 @@ python:
   - "3.6"
 install:
     - pip install -r requirements.txt
-    - pip install braintree coveralls mock mysqlclient
+    - pip install braintree coveralls mock mysqlclient pytest
 env:
   - DB=postgres
 addons:
@@ -11,6 +11,6 @@ addons:
 before_script:
   - psql -c 'create database test_db;' -U postgres
 script:
-  - nosetests --with-coverage
+  - py.test --cov-report=term --cov=app
 after_success: coveralls
 cache: pip
