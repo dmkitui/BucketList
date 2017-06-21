@@ -1,4 +1,4 @@
-from base import BaseTestCase
+# from base import BaseTestCase
 from app.models import User, Bucketlists, BucketListItems
 from app.main_app import create_app, db
 import unittest

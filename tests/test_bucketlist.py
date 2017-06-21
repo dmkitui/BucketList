@@ -1,5 +1,5 @@
 import unittest
-from base import BaseBucketListCase
+from .base import BaseBucketListCase
 import json
 
 

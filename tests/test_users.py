@@ -1,11 +1,6 @@
-import unittest
-
-# from app import create_app, db
 from app.main_app import create_app, db
-from base import BaseTestCase
+from .base import BaseTestCase
 import json
-
-
 
 class UsersModelTestCase(BaseTestCase):
     '''Testcase for the users model'''
