@@ -1,16 +1,49 @@
 import unittest
-from base import BaseTestCase
+from base import BaseBucketListCase
+import json
 
 
-class BucketList_DB(BaseTestCase):
+class BucketList_DB(BaseBucketListCase):
     '''The bucketlist base tests'''
+
+    def test_bucketlist_access_not_allowed(self):
+        '''Tests access to bucketlist not allowed to users not logged in'''
+        response = self.client().get('/api/v1/bucketlists/')
+        self.assertEqual(response.status_code, 401)
+
+        response2 = self.client().post('/api/v1/bucketlists/')
+        self.assertEqual(response2.status_code, 401)
+
 
     def test_bucketlist_create_list_item(self):
         '''Test it can create a bucketlist post request'''
 
-        response = self.client.post('/bucketlists', data=self.bucketlist)
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+
+        token = response['access_token']
+
+        response = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+
+        data = json.loads(response.data.decode())
+
+        self.assertTrue(data['name'] == 'Learn Programming')
         self.assertEqual(response.status_code, 201)
-        self.assertIn('Become a world a class developer', str(response.data))
+
+    def test_get_all_bucketlists(self):
+        '''Tests it can get all bucketlist'''
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        token = response['access_token']
+
+        response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+        self.assertEqual(response2.status_code, 201)
+
+        response3 = self.client().get('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token))
+
+        self.assertTrue(response3.status_code == 200)
+        self.assertIn('Learn Programming', str(response3.data))
 
     def test_bucketlist_delete_list_item(self):
         '''Test it can delete an existing bucketlist item'''
