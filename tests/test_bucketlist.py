@@ -30,6 +30,7 @@ class BucketList_DB(BaseBucketListCase):
         self.assertTrue(data['name'] == 'Learn Programming')
         self.assertEqual(response.status_code, 201)
 
+
     def test_get_all_bucketlists(self):
         '''Tests it can get all bucketlist'''
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
@@ -45,15 +46,40 @@ class BucketList_DB(BaseBucketListCase):
         self.assertTrue(response3.status_code == 200)
         self.assertIn('Learn Programming', str(response3.data))
 
+    def test_add_buckelist_items(self):
+        '''Test add items to bucketlist'''
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        token = response['access_token']
+
+        self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+
+        response2 = self.client().put('/api/v1/bucketlists/1', headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Python django'))
+
+        self.assertTrue(response2.status_code == 201)
+        self.assertIn('Python django', str(response2.data))
+
+
+
     def test_bucketlist_delete_list_item(self):
         '''Test it can delete an existing bucketlist item'''
         pass
+
+        # self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+        #
+        # response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        # token = response['access_token']
+        #
+        # response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+        # self.assertEqual(response2.status_code, 201)
+
 
     def test_bucketlist_edit_list_item(self):
         '''Test it can edit an existing list item.'''
         pass
 
-    def test_bucketlist_return_all(self):
+    def test_bucketlist(self):
         '''Test it can return all exisiting bucketlist items'''
         pass
 
@@ -69,12 +95,6 @@ class BucketList_DB(BaseBucketListCase):
         '''Test the response is formatted by the requested page size'''
         pass
 
-    def test_bucketlist_authetication_unauthenticated_user(self):
-        '''Test that a user who is not logged in can only login and register'''
-        pass
-
-    def test_bucketlist_authetication_authenticated_user(self):
-        '''Test a logged-in user can post bucketlists, update  the list items and search'''
 
 if __name__ == '__main__':
     unittest.main()
