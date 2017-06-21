@@ -11,11 +11,8 @@ class BaseTestCase(unittest.TestCase):
 
         self.app = create_app(config_name='testing')
         self.client = self.app.test_client
+        db.create_all()  # create the tables
 
-        with self.app.app_context():  # Bind the app to current context
-            db.session.close()
-            db.drop_all()
-            db.create_all()  # create the tables
 
 
     # Helper methods
@@ -50,3 +47,23 @@ class BaseTestCase(unittest.TestCase):
         :return: GET to the logout endpoint
         '''
         return self.client().get('/api/v1/auth/logout', follow_redirects=True)
+
+    def tearDown(self):
+        db.session.close()
+        db.drop_all()
+
+class BaseBucketListCase(BaseTestCase):
+    '''Tests configuration for bucketlist tests'''
+
+    def setUp(self):
+        self.app = create_app(config_name='testing')
+        self.client = self.app.test_client
+
+        with self.app.app_context():  # Bind the app to current context
+            db.session.close()
+            db.drop_all()
+            db.create_all()  # create the tables
+
+    def logged_valid_user(self):
+        '''Helper method for a logged in user'''
+        pass
