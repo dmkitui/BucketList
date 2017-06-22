@@ -1,5 +1,3 @@
-# from app.main_app import create_app, db
-# from base import BaseTestCase
 from . import base
 
 class UsersModelTestCase(base.BaseTestCase):
@@ -75,13 +73,28 @@ class UsersModelTestCase(base.BaseTestCase):
         self.assertEqual(status_code, 401)
         self.assertTrue(response['message'] == 'Invalid email or password')
 
+    def test_user_login_blank_details(self):
+        '''Test for login with invalid password'''
+        response, status_code = self.user_registration('newuser1@gmail.com', 'Qwerty04', 'Qwerty04')  # Create new user
+
+        self.assertEqual(status_code, 201)
+
+        # Login with invalid credentials: blank user_email
+        response, status_code = self.user_login('', 'wrong_password')
+        self.assertEqual(status_code, 401)
+        self.assertTrue(response['message'] == 'Email or password cannot be blank')
+
+        # Login with invalid credentials: blank password
+        response, status_code = self.user_login('newuser1@gmail.com', '')
+        self.assertEqual(status_code, 401)
+        self.assertTrue(response['message'] == 'Email or password cannot be blank')
 
     def test_post__invalid_token(self):
         '''test for when a user logins invalid token'''
 
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
 
-        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        self.user_login('dan@example.org', 'StrongPwd76')
         # Invalid token
         token = 'no2344324ewefsdfdf8sdf0sdf0sdfsdf77fwrwewerew'
 
