@@ -1,10 +1,9 @@
 import unittest
 import json
-
-# from base import BaseBucketListCase
 from . import base
 
-class BucketList_DB(base.BaseBucketListCase):
+
+class BucketListEndpoints(base.BaseBucketListCase):
     '''The bucketlist base tests'''
 
     def test_bucketlist_access_not_allowed(self):
@@ -14,7 +13,6 @@ class BucketList_DB(base.BaseBucketListCase):
 
         response2 = self.client().post('/api/v1/bucketlists/')
         self.assertEqual(response2.status_code, 401)
-
 
     def test_bucketlist_create_list_item(self):
         '''Test it can create a bucketlist post request'''
@@ -45,7 +43,6 @@ class BucketList_DB(base.BaseBucketListCase):
         self.assertIn('Error. No bucketlist name specified', str(response.data))
         self.assertEqual(response.status_code, 401)
 
-
     def test_get_non_existent_bucekt_list(self):
         '''test get on a non-existent-bucketlist'''
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
@@ -57,7 +54,6 @@ class BucketList_DB(base.BaseBucketListCase):
 
         self.assertTrue(response2.status_code == 404)
         self.assertIn('That bucketlist item does not exist', str(response2.data))
-
 
     def test_get_no_bucket_list_available(self):
         '''test get on a non-existent-bucketlist'''
@@ -120,8 +116,6 @@ class BucketList_DB(base.BaseBucketListCase):
         self.assertIn('Intro to Java', str(response6.data))
         self.assertIn('Intro to Python', str(response6.data))
 
-
-
     def test_add_new_buckelist_items(self):
         '''Test add items to bucketlist'''
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
@@ -135,7 +129,6 @@ class BucketList_DB(base.BaseBucketListCase):
 
         self.assertTrue(response2.status_code == 201)
         self.assertIn('Python django', str(response2.data))
-
 
     def test_add_already_existing_buckelist_items(self):
         '''Test add items to bucketlist'''
@@ -169,7 +162,6 @@ class BucketList_DB(base.BaseBucketListCase):
         data2 = json.loads(response3.data.decode())
 
         self.assertEqual('Bucketlist item No {} deleted successfully'.format(data['id']), data2['message'])
-
 
     def test_bucketlist_search_by_name(self):
         '''Test bucketlist items can be searched by name'''
