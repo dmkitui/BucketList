@@ -185,6 +185,7 @@ def create_app(config_name):
                     })
                     response.status_code = 401
                     return response
+        # To return any uncaught server errors
         except Exception as error:
             response = jsonify({
                 'message': str(error)
