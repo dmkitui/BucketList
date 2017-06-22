@@ -7,6 +7,7 @@ from flask import request, jsonify, abort, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from instance import config
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 # initialize sql-alchemy
 db = SQLAlchemy()
 
@@ -203,7 +204,7 @@ def create_app(config_name):
                     response = jsonify({
                         'message': 'Bucketlist already exists'
                     })
-                    response.status_code = 201
+                    response.status_code = 409
                     return response
 
                 bucketlist = Bucketlists(name=name, owner_id=g.user_id)
@@ -221,7 +222,7 @@ def create_app(config_name):
                 response = jsonify({
                     'message': 'Error. No bucketlist name specified'
                 })
-                response.status_code = 401
+                response.status_code = 400
                 return response
 
         elif request.method == 'GET':
@@ -268,7 +269,7 @@ def create_app(config_name):
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
     @multi_auth.login_required
     def bucketlist_manipulations(bucketlist_id, **kwargs):
-        '''Route for getting a specific bucketlist item specified by the integer id argument'''
+        '''Route for getting a specific bucketlist specified by the integer id argument'''
 
         bucketlist = Bucketlists.query.filter_by(id=bucketlist_id).first()  # retrieve the list item by id
 
@@ -290,37 +291,37 @@ def create_app(config_name):
             return response
 
         elif request.method == 'PUT':
-            name = str(request.data.get('list_item_name', ''))
 
-            current_list_items = BucketListItems.query.filter_by(item_id=bucketlist_id)
-            list_item_names = [x.list_item_name for x in current_list_items]
+            # Edits the bucketlist
+            name = str(request.data.get('name', ''))
 
-            # Code for when there is no name
-            if name in list_item_names:
+            if not name:
                 response = jsonify({
-                    'message': 'Item already in bucketlist.'
-                })
-                response.status_code = 409
-                return response
-            elif not name:
-                response = jsonify({
-                    'message': 'Bucketlist list item name not given.'
+                    'message': 'Update name not given.'
                 })
                 response.status_code = 400
                 return response
 
-            bucketlist_item = BucketListItems(name=name, bucketlist_id=bucketlist_id)
-            bucketlist_item.save()
+            if name == bucketlist.name:
+                response = jsonify({
+                    'message': 'No changes made.'
+                })
+                response.status_code = 409
+                return response
+
+            bucketlist.name = name
+            bucketlist.date_modified = datetime.utcnow()
+            bucketlist.save()
 
             response = jsonify({
-                'id': bucketlist_item.id,
-                'bucketlist': Bucketlists.query.filter_by(owner_id=g.user_id).first().name,
-                'new_item': bucketlist_item.list_item_name,
-                'date_posted': bucketlist_item.date_created,
-                'date_modified': bucketlist_item.date_modified,
+                'message':'Bucketlist updated',
+                'id': bucketlist.id,
+                'name': bucketlist.name,
+                'date_posted': bucketlist.date_created,
+                'date_modified': bucketlist.date_modified,
                 'created_by': g.user_id
             })
-            response.status_code = 201
+            response.status_code = 200
             return response
 
         elif request.method == 'GET':
@@ -354,4 +355,13 @@ def create_app(config_name):
             response.status_code = 200
             return response
 
+    # @app.route('/api/v1/bucketlists/<int:bucketlist_id>/items/', methods=['GET', 'POST'])
+    # @multi_auth.login_required
+    # def bucketlists():
+    #     pass
+
     return app
+
+
+# current_list_items = BucketListItems.query.filter_by(item_id=bucketlist_id)
+# list_item_names = [x.list_item_name for x in current_list_items]
