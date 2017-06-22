@@ -14,7 +14,7 @@ class BucketListEndpoints(base.BaseBucketListCase):
         response2 = self.client().post('/api/v1/bucketlists/')
         self.assertEqual(response2.status_code, 401)
 
-    def test_bucketlist_create_list_item(self):
+    def test_bucketlist_create_bucektlist_item(self):
         '''Test it can create a bucketlist post request'''
 
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
@@ -28,6 +28,21 @@ class BucketListEndpoints(base.BaseBucketListCase):
 
         self.assertTrue(data['name'] == 'Learn Programming')
         self.assertEqual(response.status_code, 201)
+
+    def test_bucketlist_create_duplicate_bucketlist(self):
+        '''Test it can create a bucketlist post request'''
+
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+
+        token = response['access_token']
+
+        self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+        # Post the bucketlist again
+        response = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+
+        self.assertEqual(response.status_code, 201)
+        self.assertIn('Bucketlist already exists', str(response.data))
 
     def test_bucketlist_create_bucketlist_name_not_specified(self):
         '''Test it can create a bucketlist post request'''
@@ -140,6 +155,7 @@ class BucketListEndpoints(base.BaseBucketListCase):
         self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
         self.client().put('/api/v1/bucketlists/1', headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Python django'))
 
+        # post the same item list again
         response2 = self.client().put('/api/v1/bucketlists/1', headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Python django'))
 
         self.assertEqual(response2.status_code, 409)
