@@ -1,7 +1,4 @@
 import os
-import unittest
-import nose2
-
 from app.bucketlist_app import db, create_app
 # For handling a set of commands
 from flask_migrate import Migrate, MigrateCommand
