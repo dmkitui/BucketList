@@ -1,8 +1,13 @@
 import unittest
 import json
-from app.models import User, BucketListItems, Bucketlists
+# from app.models import User, BucketListItems, Bucketlists
 
-from app.main_app import create_app, db
+# from app.main_app import create_app, db
+from app import main_app
+
+db = main_app.db
+User = main_app.User
+
 
 class BaseTestCase(unittest.TestCase):
     '''Base test case configuration'''
@@ -10,14 +15,11 @@ class BaseTestCase(unittest.TestCase):
     def setUp(self):
         '''Setup method for each test case'''
 
-        self.app = create_app(config_name='testing')
+        self.app = main_app.create_app(config_name='testing')
         self.client = self.app.test_client
-        db.create_all()  # create the tables
 
-        # self.user_email = 'dan@example.org'
-        # self.user_password = 'password0122'
-        # self.person = User(self.user_email, self.user_password)
-        # self.person.save()
+        with self.app.app_context():  # Bind the app to current context
+            db.create_all()  # create the tables
 
 
 
@@ -55,14 +57,15 @@ class BaseTestCase(unittest.TestCase):
         return self.client().get('/api/v1/auth/logout', follow_redirects=True)
 
     def tearDown(self):
-        db.session.close()
-        db.drop_all()
+        with self.app.app_context():  # Bind the app to current context
+            db.session.close()
+            db.drop_all()
 
 class BaseBucketListCase(BaseTestCase):
     '''Tests configuration for bucketlist tests'''
 
     def setUp(self):
-        self.app = create_app(config_name='testing')
+        self.app = main_app.create_app(config_name='testing')
         self.client = self.app.test_client
 
         with self.app.app_context():  # Bind the app to current context
