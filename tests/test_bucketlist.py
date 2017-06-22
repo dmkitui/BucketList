@@ -1,10 +1,10 @@
 import unittest
 import json
 
-from base import BaseBucketListCase
+# from base import BaseBucketListCase
+from . import base
 
-
-class BucketList_DB(BaseBucketListCase):
+class BucketList_DB(base.BaseBucketListCase):
     '''The bucketlist base tests'''
 
     def test_bucketlist_access_not_allowed(self):
@@ -32,6 +32,32 @@ class BucketList_DB(BaseBucketListCase):
         self.assertEqual(response.status_code, 201)
 
 
+    def test_get_non_existent_bucekt_list(self):
+        '''test get on a non-existent-bucketlist'''
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        token = response['access_token']
+
+        response2 = self.client().get('/api/v1/bucketlists/101', headers=dict(Authorization="Bearer " + token))
+
+        self.assertTrue(response2.status_code == 404)
+        self.assertIn('That bucketlist item does not exist', str(response2.data))
+
+
+    def test_get_no_bucket_list_available(self):
+        '''test get on a non-existent-bucketlist'''
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        token = response['access_token']
+
+        response2 = self.client().get('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token))
+        print(response2.data)
+
+        self.assertTrue(response2.status_code == 200)
+        self.assertIn('No bucketlists available', str(response2.data))
+
     def test_get_all_bucketlists(self):
         '''Tests it can get all bucketlist'''
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
@@ -42,10 +68,15 @@ class BucketList_DB(BaseBucketListCase):
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
         self.assertEqual(response2.status_code, 201)
 
+
+        response4 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Travel the world'))
+        self.assertEqual(response4.status_code, 201)
+
         response3 = self.client().get('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token))
 
         self.assertTrue(response3.status_code == 200)
         self.assertIn('Learn Programming', str(response3.data))
+        self.assertIn('Travel the world', str(response3.data))
 
     def test_add_new_buckelist_items(self):
         '''Test add items to bucketlist'''
@@ -58,7 +89,7 @@ class BucketList_DB(BaseBucketListCase):
 
         response2 = self.client().put('/api/v1/bucketlists/1', headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Python django'))
 
-        self.assertTrue(response2.status_code == 200)
+        self.assertTrue(response2.status_code == 201)
         self.assertIn('Python django', str(response2.data))
 
 
@@ -98,14 +129,27 @@ class BucketList_DB(BaseBucketListCase):
 
         self.assertEqual('Bucketlist item No {} deleted successfully'.format(data['id']), data2['message'])
 
+    #
+    # def test_bucketlist_get_bucketlists(self):
+    #     '''Test it can edit an existing list item.'''
+    #
+    #     self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+    #
+    #     response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+    #     token = response['access_token']
+    #
+    #     response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+    #     data = json.loads(response2.data.decode())
+    #     bucketlist_id = data['id']
+    #     print(bucketlist_id, 'XXXXXXX', data)
+    #     self.assertEqual(response2.status_code, 201)
+    #
+    #     # Edit the bucketlist
+    #     response2 = self.client().put('/api/v1/bucketlists/{}'.format(bucketlist_id), headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Introduction to JAVA'))
+    #     self.assertEqual(response2.status_code, 201)
 
-    def test_bucketlist_edit_list_item(self):
-        '''Test it can edit an existing list item.'''
-        pass
 
-    def test_bucketlist(self):
-        '''Test it can return all exisiting bucketlist items'''
-        pass
+
 
     def test_bucketlist_get_list_item_by_id(self):
         '''Test it can return a list item by id'''

@@ -1,7 +1,8 @@
-from app.main_app import create_app, db
-from base import BaseTestCase
+# from app.main_app import create_app, db
+# from base import BaseTestCase
+from . import base
 
-class UsersModelTestCase(BaseTestCase):
+class UsersModelTestCase(base.BaseTestCase):
     '''Testcase for the users model'''
 
     def test_valid_user_registration(self):
@@ -71,14 +72,3 @@ class UsersModelTestCase(BaseTestCase):
     def test_login_invalid_token(self):
         '''test for when a user logins invalid token'''
         pass
-
-
-
-
-
-
-    def tearDown(self):
-        '''Clean up the test environment'''
-        with self.app.app_context():
-            db.session.remove()
-            db.drop_all()

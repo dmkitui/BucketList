@@ -1,26 +1,17 @@
-# from base import BaseTestCase
-from app.models import User, Bucketlists, BucketListItems
-from app.main_app import create_app, db
-import unittest
+from app.models import Bucketlists, BucketListItems
+from . import base
+
+User = base.User
 
 
 
-class ModelsTests(unittest.TestCase):
+class ModelsTests(base.BaseBucketListCase):
     '''Class for the model tests'''
 
-    def setUp(self):
-        self.app = create_app(config_name='testing')
-        self.client = self.app.test_client
-        db.create_all()  # create the tables
-
+    def __init__(self):
         self.user_email = 'dan@example.org'
         self.user_password = 'password0122'
         self.person = User(self.user_email, self.user_password)
-
-    def tearDown(self):
-        db.session.close()
-        db.drop_all()
-
 
     def test_add_person(self):
         '''Test it adds a user to the database'''
@@ -33,9 +24,7 @@ class ModelsTests(unittest.TestCase):
 
     def test_it_generates_a_user_token(self):
         '''Test it generates a user token'''
-        pass
-
-
+        self.person.save()
 
     def test_query_user_by_email(self):
         '''Test for the User model'''
