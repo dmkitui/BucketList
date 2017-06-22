@@ -19,6 +19,13 @@ class UsersModelTestCase(base.BaseTestCase):
         self.assertEqual(status_code, 401)
         self.assertEqual(response['message'], 'Password fields do not match')
 
+    def test_invalid_registration_no_email_provided(self):
+        '''Tests a wrong password match'''
+        response, status_code = self.user_registration('', 'Password01', 'PASSWORD01')
+
+        self.assertEqual(status_code, 401)
+        self.assertEqual(response['message'], 'Email or password cannot be blank')
+
     def test_user_registration_weak_password(self):
         '''Test for registartion using weak password'''
         response, status_code = self.user_registration('user010@example.com', 'password', 'password')
