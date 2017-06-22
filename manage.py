@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from app.main_app import db, create_app
+from app.bucketlist_app import db, create_app
 # For handling a set of commands
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager
