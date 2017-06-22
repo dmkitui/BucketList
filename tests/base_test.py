@@ -3,10 +3,10 @@ import json
 # from app.models import User, BucketListItems, Bucketlists
 
 # from app.main_app import create_app, db
-from app import main_app
+from app import bucketlist_app
 
-db = main_app.db
-User = main_app.User
+db = bucketlist_app.db
+User = bucketlist_app.User
 
 
 class BaseTestCase(unittest.TestCase):
@@ -15,7 +15,7 @@ class BaseTestCase(unittest.TestCase):
     def setUp(self):
         '''Setup method for each test case'''
 
-        self.app = main_app.create_app(config_name='testing')
+        self.app = bucketlist_app.create_app(config_name='testing')
         self.client = self.app.test_client
 
         with self.app.app_context():  # Bind the app to current context
@@ -32,7 +32,10 @@ class BaseTestCase(unittest.TestCase):
         :param confrim_password: user password entered again to confirm
         :return: POST response to the api/auth/register endpoint
         '''
-        response = self.client().post('/api/v1/auth/register', data=dict(user_email=email, user_password=password, confirm_password=confirm_password, follow_redirects=True))
+        response = self.client().post('/api/v1/auth/register', data=dict(user_email=email,
+                                                                         user_password=password,
+                                                                         confirm_password=confirm_password,
+                                                                         follow_redirects=True))
 
         return json.loads(response.data.decode()), response.status_code
 
@@ -44,7 +47,9 @@ class BaseTestCase(unittest.TestCase):
         :return: POST to the login endpoint
         '''
 
-        response = self.client().post('/api/v1/auth/login', data=dict(user_email=email, user_password=password, follow_redirects=True))
+        response = self.client().post('/api/v1/auth/login', data=dict(user_email=email,
+                                                                      user_password=password,
+                                                                      follow_redirects=True))
 
         return json.loads(response.data.decode()), response.status_code
 
@@ -65,7 +70,7 @@ class BaseBucketListCase(BaseTestCase):
     '''Tests configuration for bucketlist tests'''
 
     def setUp(self):
-        self.app = main_app.create_app(config_name='testing')
+        self.app = bucketlist_app.create_app(config_name='testing')
         self.client = self.app.test_client
 
         with self.app.app_context():  # Bind the app to current context

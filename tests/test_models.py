@@ -1,11 +1,11 @@
 import unittest
 from app.models import Bucketlists, BucketListItems
-from . import base
+from . import base_test
 
-from app import main_app
+from app import bucketlist_app
 
-db = main_app.db
-User = main_app.User
+db = bucketlist_app.db
+User = bucketlist_app.User
 
 class ModelsTests(unittest.TestCase):
     '''Class for the model tests'''
@@ -13,7 +13,7 @@ class ModelsTests(unittest.TestCase):
     def setUp(self):
         '''Setup method for each test case'''
 
-        self.app = main_app.create_app(config_name='testing')
+        self.app = bucketlist_app.create_app(config_name='testing')
         self.client = self.app.test_client
 
         self.user_email = 'dan@example.org'
@@ -106,19 +106,3 @@ class ModelsTests(unittest.TestCase):
         db.session.close()
         db.drop_all()
         self.cntx.pop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

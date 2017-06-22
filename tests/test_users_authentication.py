@@ -1,6 +1,6 @@
-from . import base
+from . import base_test
 
-class UsersModelTestCase(base.BaseTestCase):
+class UsersModelTestCase(base_test.BaseTestCase):
     '''Testcase for the users model'''
 
     def test_valid_user_registration(self):
@@ -29,7 +29,8 @@ class UsersModelTestCase(base.BaseTestCase):
         response, status_code = self.user_registration('user010@example.com', 'password', 'password')
 
         self.assertEqual(status_code, 401)
-        self.assertEqual(response['message'], 'Weak password. Make sure password contains at least 8 characters, an uppercase letter, and a digit')
+        self.assertEqual(response['message'],
+                         'Weak password. Make sure password contains at least 8 characters, an uppercase letter, and a digit')
 
     def test_duplicate_user_registration(self):
         '''Tests to prevent an already registred email being used again'''
@@ -98,6 +99,8 @@ class UsersModelTestCase(base.BaseTestCase):
         # Invalid token
         token = 'no2344324ewefsdfdf8sdf0sdf0sdfsdf77fwrwewerew'
 
-        response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+        response2 = self.client().post('/api/v1/bucketlists/',
+                                       headers=dict(Authorization="Bearer " + token),
+                                       data=dict(name='Learn Programming'))
 
         self.assertEqual(response2.status_code, 401)
