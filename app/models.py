@@ -41,18 +41,13 @@ class User(db.Model):
         :param user_id: User's id
         :return: a user token
         '''
-        try:
-            payload = {
-             'exp': datetime.utcnow() + timedelta(seconds=300),
-             'iat': datetime.utcnow(),  # Time the jwt was made
-             'sub': user_id  # Subject of the payload
-            }
-            jwt_string = jwt.encode(payload, config.Config.SECRET, algorithm='HS256')
-            return jwt_string
-
-        except Exception as error:
-            return error
-
+        payload = {
+         'exp': datetime.utcnow() + timedelta(seconds=300),
+         'iat': datetime.utcnow(),  # Time the jwt was made
+         'sub': user_id  # Subject of the payload
+        }
+        jwt_string = jwt.encode(payload, config.Config.SECRET, algorithm='HS256')
+        return jwt_string
 
     def get_user(self):
         '''Method to return a user from db'''
