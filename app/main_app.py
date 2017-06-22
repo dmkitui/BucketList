@@ -40,7 +40,7 @@ def verify_password(user_email, user_password):
 # Token Authentication
 @token_auth.verify_token
 def verify_token(access_token):
-    '''Verifies the user token for expiration time, invalid token and sets user id'''
+    '''Verifies the user token for expiration time, invalid token and sets user id if valid'''
     user_id = decode_token(access_token)
     if not isinstance(user_id, str):
         g.user_id = user_id
