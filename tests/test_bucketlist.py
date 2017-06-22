@@ -73,10 +73,37 @@ class BucketList_DB(base.BaseBucketListCase):
         self.assertEqual(response4.status_code, 201)
 
         response3 = self.client().get('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token))
+        self.assertEqual(response3.status_code, 200)
 
-        self.assertTrue(response3.status_code == 200)
         self.assertIn('Learn Programming', str(response3.data))
         self.assertIn('Travel the world', str(response3.data))
+
+    def test_get_bucketlist_items(self):
+        '''Tests it can get all bucketlist'''
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        token = response['access_token']
+
+        response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+        self.assertEqual(response2.status_code, 201)
+        data = json.loads(response2.data.decode())
+        buckelist_id = data['id']
+
+
+        response4 = self.client().put('/api/v1/bucketlists/{}'.format(buckelist_id), headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Intro to Java'))
+        self.assertEqual(response4.status_code, 201)
+
+        response5 = self.client().put('/api/v1/bucketlists/{}'.format(buckelist_id), headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Intro to Python'))
+        self.assertEqual(response5.status_code, 201)
+
+        response6 = self.client().get('/api/v1/bucketlists/{}'.format(buckelist_id), headers=dict(Authorization="Bearer " + token))
+        print(str(response6.data))
+
+        self.assertIn('Intro to Java', str(response6.data))
+        self.assertIn('Intro to Python', str(response6.data))
+
+
 
     def test_add_new_buckelist_items(self):
         '''Test add items to bucketlist'''
