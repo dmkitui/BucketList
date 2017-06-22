@@ -121,23 +121,6 @@ class BucketListItems(BucketlistBaseModel):
     def get(item_id):
         return BucketListItems.query.filter_by(item_id=item_id)
 
-    @staticmethod
-    def list_response(bucket_item_id):
-
-        items = BucketListItems.get(bucket_item_id)
-        list_output = []
-
-        if items:
-            for item in items:
-                obj = {
-                    'id': item.id,
-                    'list_name': item.list_item_name,
-                    'done': item.done
-                }
-                list_output.append(obj)
-
-        return list_output
-
 
 class Bucketlists(BucketlistBaseModel):
     '''Bucketlist items table'''
