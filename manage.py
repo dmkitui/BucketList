@@ -1,5 +1,6 @@
 import os
 import unittest
+import nose2
 
 from app.bucketlist_app import db, create_app
 # For handling a set of commands
@@ -20,12 +21,8 @@ manager.add_command('db', MigrateCommand)
 @manager.command
 def test():
     '''Runs the unittest'''
-    tests = unittest.TestLoader().discover('./tests', pattern='test*.py')
-    result = unittest.TextTestRunner(verbosity=2).run(tests)
 
-    if result.wasSuccessful():
-        return 0
-    return 1
+    os.system('nosetests --with-coverage --cover-erase --cover-package=app')
 
 if __name__ == '__main__':
     manager.run()
