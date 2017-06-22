@@ -61,17 +61,9 @@ def decode_token(token):
         return payload['sub']
 
     except jwt.ExpiredSignatureError: # when token is expired
-        # response = jsonify({
-        #     'message': 'Expired token. Please login again to get a new token'
-        # })
-        # response.status_code = 404
         return 'Expired token. Please login again to get a new token'
 
     except jwt.InvalidTokenError:  # When token is invalid
-        # response = jsonify({
-        #     'message': 'Invalid token. Register or Login to access the service'
-        # })
-        # response.status_code = 404
         return 'Invalid token. Register or Login to access the service'
 
 
@@ -241,41 +233,40 @@ def create_app(config_name):
 
             bucketlists = Bucketlists.get(g.user_id)
 
-            if bucketlists:
-                bucketlists_details = []
-                for bucketlist in bucketlists:
-                    list_items = []
-                    items = BucketListItems.query.filter_by(item_id=bucketlist.id)
+            bucketlists_details = []
+            for bucketlist in bucketlists:
+                list_items = []
+                items = BucketListItems.query.filter_by(item_id=bucketlist.id)
 
-                    if items:
-                        for item in items:
-                            obj = {
-                                'list_item': item.list_item_name,
-                                'date_created': item.date_created,
-                                'date_modified': item.date_modified,
-                                'done': item.done
-                            }
-                            list_items.append(obj)
+                if items:
+                    for item in items:
+                        obj = {
+                            'list_item': item.list_item_name,
+                            'date_created': item.date_created,
+                            'date_modified': item.date_modified,
+                            'done': item.done
+                        }
+                        list_items.append(obj)
 
-                    bucketlist_data = {
-                        'id': bucketlist.id,
-                        'name': bucketlist.name,
-                        'items': list_items,
-                        'date_created': bucketlist.date_created,
-                        'date_modified': bucketlist.date_modified
-                    }
-                    bucketlists_details.append(bucketlist_data)
+                bucketlist_data = {
+                    'id': bucketlist.id,
+                    'name': bucketlist.name,
+                    'items': list_items,
+                    'date_created': bucketlist.date_created,
+                    'date_modified': bucketlist.date_modified
+                }
+                bucketlists_details.append(bucketlist_data)
 
+            if bucketlists_details:
                 response = jsonify({
                     'bucketlists': bucketlists_details
                 })
                 response.status_code = 200
-
-            else: # No bucketlists available
+            else:
                 response = jsonify({
                     'message': 'No bucketlists available'
                 })
-                response.status_code = 404
+                response.status_code = 200
 
             return response
 
@@ -334,7 +325,7 @@ def create_app(config_name):
                 'date_modified': bucketlist_item.date_modified,
                 'created_by': g.user_id
             })
-            response.status_code = 200
+            response.status_code = 201
             return response
 
         elif request.method == 'GET':
