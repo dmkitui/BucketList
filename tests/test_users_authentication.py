@@ -69,6 +69,15 @@ class UsersModelTestCase(base.BaseTestCase):
         self.assertTrue(response['message'] == 'Invalid email or password')
 
 
-    def test_login_invalid_token(self):
+    def test_post__invalid_token(self):
         '''test for when a user logins invalid token'''
-        pass
+
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        # Invalid token
+        token = 'no2344324ewefsdfdf8sdf0sdf0sdfsdf77fwrwewerew'
+
+        response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
+
+        self.assertEqual(response2.status_code, 401)
