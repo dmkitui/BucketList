@@ -7,21 +7,15 @@ from flask import request, jsonify, abort, g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from instance import config
 from flask_bcrypt import Bcrypt
-
-
-
-
 # initialize sql-alchemy
-
 db = SQLAlchemy()
 
 basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth('Bearer')
 multi_auth = MultiAuth(basic_auth, token_auth)
 
-#  username and password verification
 from .models import User
-
+#  username and password verification
 @basic_auth.verify_password
 def verify_password(user_email, user_password):
     '''
@@ -207,7 +201,7 @@ def create_app(config_name):
 
                 if name in bucketlist_names:
                     response = jsonify({
-                        'message': 'Bucketlist item already exists'
+                        'message': 'Bucketlist already exists'
                     })
                     response.status_code = 201
                     return response
