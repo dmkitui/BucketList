@@ -1,4 +1,4 @@
-from .main_app import db
+from .bucketlist_app import db
 from flask_bcrypt import Bcrypt
 from flask import jsonify
 import jwt
@@ -134,6 +134,3 @@ class Bucketlists(BucketlistBaseModel):
         '''method to return a bucketlist'''
         return Bucketlists.query.filter_by(owner_id=user_id)
 
-    def __str__(self):
-        return 'ID: {id} \n Name: {name} \n items: {items} \n date_created: {date_created} \n date_modified: {date_modified}'.format(name=self.name, id=self.id, date_created=self.date_created,
-                                                                                                                      date_modified=self.date_modified, items=[])
