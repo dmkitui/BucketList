@@ -129,28 +129,6 @@ class BucketList_DB(base.BaseBucketListCase):
 
         self.assertEqual('Bucketlist item No {} deleted successfully'.format(data['id']), data2['message'])
 
-    #
-    # def test_bucketlist_get_bucketlists(self):
-    #     '''Test it can edit an existing list item.'''
-    #
-    #     self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
-    #
-    #     response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
-    #     token = response['access_token']
-    #
-    #     response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + token), data=dict(name='Learn Programming'))
-    #     data = json.loads(response2.data.decode())
-    #     bucketlist_id = data['id']
-    #     print(bucketlist_id, 'XXXXXXX', data)
-    #     self.assertEqual(response2.status_code, 201)
-    #
-    #     # Edit the bucketlist
-    #     response2 = self.client().put('/api/v1/bucketlists/{}'.format(bucketlist_id), headers=dict(Authorization="Bearer " + token), data=dict(list_item_name='Introduction to JAVA'))
-    #     self.assertEqual(response2.status_code, 201)
-
-
-
-
     def test_bucketlist_get_list_item_by_id(self):
         '''Test it can return a list item by id'''
         pass
