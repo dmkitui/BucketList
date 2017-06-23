@@ -1,4 +1,5 @@
 from .bucketlist_app import db
+from marshmallow import Schema, fields, validates, ValidationError, post_load, post_dump
 from flask_bcrypt import Bcrypt
 from flask import jsonify
 import jwt
@@ -42,7 +43,7 @@ class User(db.Model):
         :return: a user token
         '''
         payload = {
-         'exp': datetime.utcnow() + timedelta(seconds=300),
+         'exp': datetime.utcnow() + timedelta(seconds=3000),
          'iat': datetime.utcnow(),  # Time the jwt was made
          'sub': user_id  # Subject of the payload
         }
@@ -62,6 +63,20 @@ class User(db.Model):
         '''Delete a user from db and all list items created by them'''
         db.session.remove(self)
         db.session.commit()
+
+
+class UserSchema(Schema):
+    '''Class mapping for User objects to fields'''
+    date_registered = fields.DateTime()
+    user_email = fields.Email(required=True,
+                              error_messages={'required': 'Email address not provided'})
+    user_password = fields.Str(required=True,
+                               error_messages={'required': 'Password not provided'})
+    confirm_password = fields.Str(required=True,
+                                  error_messages={'required': 'Confirmation password not provided'})
+    id = fields.Int()
+
+
 
 
 class BucketlistBaseModel(db.Model):
@@ -116,6 +131,19 @@ class BucketListItems(BucketlistBaseModel):
     def get(item_id):
         return BucketListItems.query.filter_by(item_id=item_id)
 
+class BuckelistItemsSchema(Schema):
+    '''Class to model bucketlist items to fields'''
+
+    item_id = fields.Int()
+    list_item_name = fields.Str(required=True, error_messages={'required':'Item name not '
+                                                                     'provided'})
+    date_created = fields.DateTime()
+    date_modified = fields.DateTime()
+    done = fields.Boolean()
+
+    # @post_load
+    # def make_item(self, data):
+    #     return User(**data)
 
 class Bucketlists(BucketlistBaseModel):
     '''Bucketlist items table'''
@@ -133,4 +161,14 @@ class Bucketlists(BucketlistBaseModel):
     def get(user_id):
         '''method to return a bucketlist'''
         return Bucketlists.query.filter_by(owner_id=user_id)
+
+
+class BucketlistsSchema(Schema):
+    '''Class to map the bucketlists objects to fields'''
+
+    id = fields.Int()
+    name = fields.Str(required=True, error_messages={'required':'Bucketlist name not provided'})
+    date_created = fields.DateTime()
+    date_modified = fields.DateTime()
+    owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner not provided'})
 

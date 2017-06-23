@@ -8,6 +8,7 @@ from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from instance import config
 from flask_bcrypt import Bcrypt
 from datetime import datetime
+
 # initialize sql-alchemy
 db = SQLAlchemy()
 
@@ -15,7 +16,7 @@ basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth('Bearer')
 multi_auth = MultiAuth(basic_auth, token_auth)
 
-from .models import User
+from .models import User, UserSchema, BuckelistItemsSchema, BucketlistsSchema
 #  username and password verification
 @basic_auth.verify_password
 def verify_password(user_email, user_password):
@@ -78,18 +79,16 @@ def create_app(config_name):
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def auth_register():
-        '''Method to create a new user'''
+        '''Route to create a new user'''
 
-        user_email = str(request.data.get('user_email', ''))
-        user_password = str(request.data.get('user_password', ''))
-        confirm_password = str(request.data.get('confirm_password', ''))
+        data, error = UserSchema().load(request.data)
 
-        if not user_email or not user_password:
-            response = jsonify({
-                'message': 'Email or password cannot be blank'
-            })
-            response.status_code = 401
-            return response
+        if error:
+            return error, 400
+
+        user_email = data['user_email']
+        user_password = data['user_password']
+        confirm_password = data['confirm_password']
 
         user = User.query.filter_by(user_email=user_email).first()
 
@@ -97,8 +96,9 @@ def create_app(config_name):
             response = jsonify({
                 'message': 'Registration Failure. User {} already registered'.format(user_email)
             })
-            response.status_code = 202
+            response.status_code = 409
             return response
+
         # User does not exist, create one
         else:
 
@@ -106,32 +106,31 @@ def create_app(config_name):
                 response = jsonify({
                     'message': 'Password fields do not match'
                 })
-                response.status_code = 401
+                response.status_code = 400
                 return response
 
             if not strong_password(user_password):
                 response = jsonify({
                     'message': 'Weak password. Make sure password contains at least 8 characters, an uppercase letter, and a digit'
                 })
-                response.status_code = 401
+                response.status_code = 400
                 return response
 
             try:
                 new_user = User(user_email=user_email, user_password=user_password)
                 new_user.save()
 
-                response = jsonify({
-                    'message': 'Registration successful, welcome to Bucketlist'
-                })
-                response.status_code = 201
+                obj = User.query.filter_by(user_email=user_email).first()
 
-                return response
+                response, error = UserSchema().dumps(obj)
+
+                return response, 201
 
             except Exception as error: # When an error occurs
                 response = jsonify({
-                    'meesage': str(error)
+                    'message': str(error)
                 })
-                response.status_code = 401
+                response.status_code = 500
                 return response
 
     def strong_password(password):
@@ -145,15 +144,13 @@ def create_app(config_name):
     def auth_login():
         '''Login an existing user'''
         try:
-            user_email = str(request.data.get('user_email', ''))
-            user_password = str(request.data.get('user_password', ''))
 
-            if not user_email or not user_password:
-                response = jsonify({
-                    'message': 'Email or password cannot be blank'
-                })
-                response.status_code = 401
-                return response
+            data, error = UserSchema(partial=('confirm_password',)).load(request.data)
+            if error:
+                return error, 400
+
+            user_email = data['user_email']
+            user_password = data['user_password']
 
             user = User.query.filter_by(user_email=user_email).first()
 
@@ -176,7 +173,7 @@ def create_app(config_name):
 
                 else:
                     response = jsonify({
-                        'message': 'Invalid email or password'
+                        'message': 'Incorrect email or password'
                     })
                     response.status_code = 401
                     return response
@@ -191,85 +188,67 @@ def create_app(config_name):
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
     @multi_auth.login_required
     def bucketlists():
-        '''method to create or return list of bucketlist items'''
+        '''Route to create or return list of bucketlist items'''
 
         if request.method == 'POST':
-            name = str(request.data.get('name', ''))
 
-            if name:
-                all_user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id)
-                bucketlist_names = [x.name for x in all_user_bucketlists]
+            data, error = BucketlistsSchema(partial=('owner_id', 'id',)).load(request.data)
+            if error:
+                return error, 400
 
-                if name in bucketlist_names:
-                    response = jsonify({
-                        'message': 'Bucketlist already exists'
-                    })
-                    response.status_code = 409
-                    return response
+            name = data['name']
 
-                bucketlist = Bucketlists(name=name, owner_id=g.user_id)
-                bucketlist.save()
+            all_user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id)
+            bucketlist_names = [x.name for x in all_user_bucketlists]
+
+            if name in bucketlist_names:
                 response = jsonify({
-                    'id': bucketlist.id,
-                    'name': bucketlist.name,
-                    'date_posted': bucketlist.date_created,
-                    'date_modified': bucketlist.date_modified
+                    'message': 'Bucketlist already exists'
                 })
-                response.status_code = 201
+                response.status_code = 409
                 return response
 
-            else:  # No name for bucketlist name specified
-                response = jsonify({
-                    'message': 'Error. No bucketlist name specified'
-                })
-                response.status_code = 400
-                return response
+            bucketlist = Bucketlists(name=name, owner_id=g.user_id)
+            bucketlist.save()
+
+            obj = Bucketlists.query.filter_by(owner_id=g.user_id).first()
+            response, error = BucketlistsSchema().dumps(obj)
+
+            return response, 201
 
         elif request.method == 'GET':
 
-            bucketlists = Bucketlists.get(g.user_id)
+            available_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id)
 
-            bucketlists_details = []
-            for bucketlist in bucketlists:
-                list_items = []
-                items = BucketListItems.query.filter_by(item_id=bucketlist.id)
+            if available_bucketlists:
+                bucketlists_details = {}
+                for bucketlist in available_bucketlists:
+                    item_details = []
+                    items = BucketListItems.query.filter_by(item_id=bucketlist.id)
+                    if list(items):
+                        item_data, error = BuckelistItemsSchema(many=True).dump(items)
+                        item_details.append(item_data)
 
-                if items:
-                    for item in items:
-                        obj = {
-                            'list_item': item.list_item_name,
-                            'date_created': item.date_created,
-                            'date_modified': item.date_modified,
-                            'done': item.done
-                        }
-                        list_items.append(obj)
+                    bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
 
-                bucketlist_data = {
-                    'id': bucketlist.id,
-                    'name': bucketlist.name,
-                    'items': list_items,
-                    'date_created': bucketlist.date_created,
-                    'date_modified': bucketlist.date_modified
-                }
-                bucketlists_details.append(bucketlist_data)
+                    bucketlist_obj.update({'items': item_details})
 
-            if bucketlists_details:
-                response = jsonify({
-                    'bucketlists': bucketlists_details
-                })
-                response.status_code = 200
+                    bucketlists_details.update(bucketlist_obj)
+
+                if bucketlists_details:
+                    response = bucketlists_details
+
             else:
                 response = jsonify({
                     'message': 'No bucketlists available'
                 })
-                response.status_code = 200
 
-            return response
+            return response, 200
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
     @multi_auth.login_required
     def bucketlist_manipulations(bucketlist_id, **kwargs):
-        '''Route for getting a specific bucketlist specified by the integer id argument'''
+        '''Route for operating on a specific bucketlist specified by the integer id argument'''
 
         bucketlist = Bucketlists.query.filter_by(id=bucketlist_id).first()  # retrieve the list item by id
 
@@ -293,14 +272,12 @@ def create_app(config_name):
         elif request.method == 'PUT':
 
             # Edits the bucketlist
-            name = str(request.data.get('name', ''))
+            data, error = BucketlistsSchema(partial=('owner_id',)).load(request.data)
 
-            if not name:
-                response = jsonify({
-                    'message': 'Update name not given.'
-                })
-                response.status_code = 400
-                return response
+            if error:
+                return error, 400
+
+            name = data['name']
 
             if name == bucketlist.name:
                 response = jsonify({
@@ -313,55 +290,91 @@ def create_app(config_name):
             bucketlist.date_modified = datetime.utcnow()
             bucketlist.save()
 
-            response = jsonify({
-                'message':'Bucketlist updated',
-                'id': bucketlist.id,
-                'name': bucketlist.name,
-                'date_posted': bucketlist.date_created,
-                'date_modified': bucketlist.date_modified,
-                'created_by': g.user_id
-            })
-            response.status_code = 200
-            return response
+            bucketist_obj = Bucketlists.query.filter_by(id=bucketlist_id).first()
+            response, error = BucketlistsSchema().dumps(bucketist_obj)
+
+            if error:
+                return error, 500
+
+            return response, 200
 
         elif request.method == 'GET':
 
             bucketlist = Bucketlists.query.filter_by(id=bucketlist_id).first()  # retrieve the list item by id
 
             if not bucketlist:
-                abort(404)  # When buckelist item not found, HTTP status code of 404
+                response = jsonify({
+                    'message': 'That bucketlist item does not exist'
+                })
+                response.status_code = 404
+                return response
 
-            items = BucketListItems.query.filter_by(item_id=bucketlist_id)
-            list_items = []
-            if items:
-                for item in items:
-                    obj = {
-                        'list_item': item.list_item_name,
-                        'date_created': item.date_created,
-                        'date_modified': item.date_modified,
-                        'done': item.done
-                    }
-                    list_items.append(obj)
+            bucketlists_details = {}
+            item_details = []
 
+            items = BucketListItems.query.filter_by(item_id=bucketlist.id)
+            if list(items):
+                item_data, error = BuckelistItemsSchema(many=True).dump(items)
+                item_details.append(item_data)
+
+            bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
+
+            bucketlist_obj.update({'items': item_details})
+
+            bucketlists_details.update(bucketlist_obj)
+
+            response = bucketlists_details
+
+            return response, 200
+
+    @app.route('/api/v1/bucketlists/<int:bucketlist_id>/items/', methods=['POST'])
+    @multi_auth.login_required
+    def bucketlist_items_stuff(bucketlist_id):
+        '''Route to add items to a bucketlist identified by bucketlist_id'''
+
+        if not isinstance(bucketlist_id, int):
             response = jsonify({
-                'id': bucketlist.id,
-                'name': bucketlist.name,
-                'items': list_items,
-                'date_posted': bucketlist.date_created,
-                'date_modified': bucketlist.date_modified,
-                'created_by': g.user_id
+                'message': 'Bucketlist ID format must be an integer'
             })
-
-            response.status_code = 200
+            response.status_code = 400
             return response
 
-    # @app.route('/api/v1/bucketlists/<int:bucketlist_id>/items/', methods=['GET', 'POST'])
-    # @multi_auth.login_required
-    # def bucketlists():
-    #     pass
+        bucketlist = Bucketlists.query.filter_by(id=bucketlist_id).first()
+
+        if not bucketlist:
+            response = jsonify({
+                'message': 'That bucketlist does not exist'
+            })
+            response.status_code = 404
+            return response
+
+        items = BucketListItems.query.filter_by(item_id=bucketlist_id)
+
+        data, error = BuckelistItemsSchema().load(request.data)
+
+        if error:
+            return error, 400
+
+        list_name = data['list_item_name']
+
+        if list(items):
+            item_names = [item.list_item_name for item in items]
+            if list_name in item_names:
+                response = jsonify({
+                    'message':'The item already in list'
+                })
+                return response, 409
+
+        new_item = BucketListItems(name=list_name, bucketlist_id=bucketlist_id)
+        new_item.save()
+
+        list_objects = BucketListItems.query.filter_by(item_id=bucketlist_id)
+
+        response, error = BuckelistItemsSchema(many=True).dumps(list_objects)
+
+        if error:
+            return error, 500
+
+        return response
 
     return app
-
-
-# current_list_items = BucketListItems.query.filter_by(item_id=bucketlist_id)
-# list_item_names = [x.list_item_name for x in current_list_items]
