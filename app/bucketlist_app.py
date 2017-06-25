@@ -74,29 +74,12 @@ def create_app(config_name):
     app = FlaskAPI(__name__, instance_relative_config=True)
     app.config.from_object(app_config[config_name])
     app.config.from_pyfile('config.py')
+    # Sqlachemy has signicant overheads and will be deprecated in future, hence disabled
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
     with app.app_context():  # Bind the app to current context
         db.create_all()  # create the tables
-
-    @app.before_request
-    def database_check():
-        """Method to confirm database tables setup, and provide user friendly information if 
-        they dont exist"""
-        engine = db.create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-        user_table = engine.dialect.has_table(engine, 'users')
-        bucketlist_table = engine.dialect.has_table(engine, 'bucketlists')
-        items_table = engine.dialect.has_table(engine, 'bucketlist_items')
-
-        if not user_table or not bucketlist_table or not items_table:
-            if app.config['ENV'] == 'testing': #  Dont return error in testing environment
-                pass
-            else:
-                response = ({
-                    'message': 'Database not properly setup. Application shall exit'
-                })
-                return response, 500
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def auth_register():
