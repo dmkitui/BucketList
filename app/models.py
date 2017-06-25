@@ -125,6 +125,7 @@ class Bucketlists(BucketlistBaseModel):
         self.name = name
         self.owner_id = owner_id
 
+
 class MarshmallowSchemaBase(Schema):
     """Base class for the marshmallow classes"""
     __abstract__ = True  # Abstract class for use by inheriting classes.
