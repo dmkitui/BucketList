@@ -21,8 +21,6 @@ class BaseTestCase(unittest.TestCase):
         with self.app.app_context():  # Bind the app to current context
             db.create_all()  # create the tables
 
-
-
     # Helper methods
     def user_registration(self, email, password, confirm_password):
         '''
@@ -78,6 +76,27 @@ class BaseBucketListCase(BaseTestCase):
             db.drop_all()
             db.create_all()  # create the tables
 
-    def logged_valid_user(self):
-        '''Helper method for a logged in user'''
-        pass
+        # Register a user
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        # Login the user
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        # Get the token
+        self.token = response['access_token']
+
+        # # Create a bucketlist
+        # response = self.client().post('/api/v1/bucketlists/',
+        #                               headers=dict(Authorization="Bearer " + token),
+        #                               data=dict(name='Learn Programming'))
+        #
+        # # Create a bucketlist item
+
+
+
+
+
+
+    def tearDown(self):
+        with self.app.app_context():  # Bind the app to current context
+            db.session.close()
+            db.drop_all()
