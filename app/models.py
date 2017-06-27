@@ -161,7 +161,6 @@ class BucketlistsSchema(MarshmallowSchemaBase):
     @validates('name')
     def name_validator(self, name):
         """Method to validate the name fields"""
-        print('NAME:', name)
         if not name:
             raise ValidationError('Error. No bucketlist name specified')
         try:
