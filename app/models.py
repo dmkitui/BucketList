@@ -49,10 +49,10 @@ class User(db.Model):
         jwt_string = jwt.encode(payload, config.Config.SECRET, algorithm='HS256')
         return jwt_string
 
-    def delete_user(self):
-        """Delete a user from db and all list items created by them"""
-        db.session.remove(self)
-        db.session.commit()
+    # def delete_user(self):
+    #     """Delete a user from db and all list items created by them"""
+    #     db.session.remove(self)
+    #     db.session.commit()
 
 
 class UserSchema(Schema):
@@ -98,7 +98,6 @@ class BucketListItems(BucketlistBaseModel):
 
     ___tablename__ = 'bucketlist_items'
 
-    id = db.Column(db.Integer, primary_key=True)
     # Id the bucketlist belongs to
     bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id', ondelete='CASCADE'))
     item_name = db.Column(db.String(255))  # Name of the bucket list item
@@ -109,21 +108,32 @@ class BucketListItems(BucketlistBaseModel):
         self.bucketlist_id = bucketlist_id
 
     @staticmethod
-    def get(item_id):
-        return BucketListItems.query.filter_by(item_id=item_id)
+    def get_all(bucketlist_id):
+        """Method to return a bucketlist items specified by bucketlist_id"""
+        return BucketListItems.query.filter_by(bucketlist_id=bucketlist_id)
+
+    @staticmethod
+    def get(name):
+        """Method to get one bucketlist item by name"""
+        obj = BucketListItems.query.filter_by(item_name=name).first()
+        return obj
 
 
 class Bucketlists(BucketlistBaseModel):
     """Class for Bucketlist data"""
     __tablename__ = 'bucketlists'
 
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256))
     owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))  # Owner of the bucketlist
 
     def __init__(self, name, owner_id):
         self.name = name
         self.owner_id = owner_id
+
+    @staticmethod
+    def get_all(owner_id):
+        """Method to get list of all bucketlist items"""
+        return Bucketlists.query.filter_by(owner_id=owner_id)
 
 
 class MarshmallowSchemaBase(Schema):
@@ -134,7 +144,7 @@ class MarshmallowSchemaBase(Schema):
     date_modified = fields.DateTime()
 
 
-class BuckelistItemsSchema(MarshmallowSchemaBase):
+class BucketlistItemsSchema(MarshmallowSchemaBase):
     """Class to map marshmallow fields and bucketlistitems class"""
 
     bucketlist_id = fields.Int()
@@ -146,11 +156,12 @@ class BucketlistsSchema(MarshmallowSchemaBase):
     """Class to map the bucketlists objects to marshmallow fields"""
 
     name = fields.Str(required=True, error_messages={'required':'Bucketlist name not provided'})
-    owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner not provided'})
-
+    owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner Id not '
+                                                                    'provided'})
     @validates('name')
     def name_validator(self, name):
         """Method to validate the name fields"""
+        print('NAME:', name)
         if not name:
             raise ValidationError('Error. No bucketlist name specified')
         try:
