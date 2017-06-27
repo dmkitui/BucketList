@@ -219,7 +219,7 @@ def create_app(config_name):
 
             name = data['name']
 
-            all_user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id)
+            all_user_bucketlists = Bucketlists.get_all(g.user_id)
             bucketlist_names = [bucketlist.name for bucketlist in all_user_bucketlists]
 
             if name in bucketlist_names:
@@ -240,14 +240,14 @@ def create_app(config_name):
 
         elif request.method == 'GET':
 
-            user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id)
+            user_bucketlists = Bucketlists.get_all(g.user_id)
 
             if list(user_bucketlists):
                 bucketlists_details = []
                 for x in range(len(list(user_bucketlists))):
                     item_data = []
                     bucketlist = user_bucketlists[x]
-                    items = BucketListItems.query.filter_by(bucketlist_id=bucketlist.id)
+                    items = BucketListItems.get_all(bucketlist.id)
                     items_data = []
                     if list(items):
                         for y in range(len(list(items))):
@@ -283,8 +283,7 @@ def create_app(config_name):
             response.status_code = 400
             return response
 
-
-        user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id).all()
+        user_bucketlists = Bucketlists.get_all(g.user_id)
 
         data, error = BucketlistsSchema(partial=('name', 'id', 'owner_id')).load(request.data)
         if error:
@@ -315,7 +314,6 @@ def create_app(config_name):
 
             try:
                 name = data['name']
-                print('NAME:', name)
             except KeyError:
                 response = jsonify({
                     'message':'Update name not given'
@@ -354,7 +352,7 @@ def create_app(config_name):
 
             bucketlists_details = {}
             item_details = []
-            items = BucketListItems.query.filter_by(bucketlist_id=bucketlist.id)
+            items = BucketListItems.get_all(bucketlist.id)
             items_data = []
             if list(items):
                 for y in range(len(list(items))):
@@ -378,16 +376,9 @@ def create_app(config_name):
     @multi_auth.login_required
     def bucketlist_items(bucketlist_id):
         """Route to add items to a bucketlist <bucketlist_id>"""
-        # if not isinstance(bucketlist_id, int):
-        #     response = jsonify({
-        #         'message': 'Bucketlist ID format must be an integer'
-        #     })
-        #     response.status_code = 400
-        #     return response
 
-        user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id).all()
+        user_bucketlists = Bucketlists.get_all(g.user_id)
 
-        print(bucketlist_id, 'XXXXXXXXXX', len(list(user_bucketlists)))
         if bucketlist_id > len(list(user_bucketlists)):
             response = jsonify({
                 'message': 'That bucketlist does not exist'
@@ -396,9 +387,7 @@ def create_app(config_name):
             return response
 
         bucketlist = user_bucketlists[(bucketlist_id - 1)]
-
-        items = BucketListItems.query.filter_by(bucketlist_id=bucketlist.id)
-
+        items = BucketListItems.get_all(bucketlist.id)
         data, error = BucketlistItemsSchema(partial=('done',)).load(request.data)
 
         if error:
@@ -417,7 +406,7 @@ def create_app(config_name):
         new_item = BucketListItems(item_name=list_name, bucketlist_id=bucketlist.id)
         new_item.save()
 
-        list_object = BucketListItems.query.filter_by(item_name=list_name).first()
+        list_object = BucketListItems.get(list_name)
 
         response, error = BucketlistItemsSchema().dump(list_object)
         response.update({'id': len(list(items))})
@@ -435,8 +424,7 @@ def create_app(config_name):
 
         """Route to edit or delete bucketlist items <item_id> of bucketlist <bucketlist_id>"""
 
-        user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user_id).all()
-        print(bucketlist_id, "XXXXX", len(list(user_bucketlists)), item_id)
+        user_bucketlists = Bucketlists.get_all(g.user_id)
 
         if bucketlist_id > len(list(user_bucketlists)):
             response = jsonify({
@@ -445,9 +433,8 @@ def create_app(config_name):
             return response, 404
 
         bucketlist = user_bucketlists[int(bucketlist_id) - 1]
-        print(bucketlist.name, bucketlist.id)
 
-        items = BucketListItems.query.filter_by(bucketlist_id=bucketlist.id)
+        items = BucketListItems.get_all(bucketlist.id)
 
         if int(item_id) > len(list(items)):
 
@@ -499,7 +486,7 @@ def create_app(config_name):
             bucketlist.date_modified = datetime.utcnow()
             bucketlist.save()
 
-            item_obj = BucketListItems.query.filter_by(item_name=item.item_name).first()
+            item_obj = BucketListItems.get(item.item_name)
 
             response, error = BucketlistItemsSchema().dump(item_obj)
 
