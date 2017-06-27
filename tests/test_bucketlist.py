@@ -333,14 +333,12 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         data = json.loads(response2.data.decode())
         bucketlist_id = data['id']
-        print('BUCKETLIST ID', bucketlist_id)
 
         response3 = self.client().post('/api/v1/bucketlists/{}/items/'.format(bucketlist_id),
                                       headers=dict(Authorization="Bearer " + self.token),
                                       data=dict(item_name='Intro to Python'))
 
         data2 = json.loads(response3.data.decode())
-        print('WWWWWWW', data2)
         item_id = data2['id']
 
         response4 = self.client().delete(
