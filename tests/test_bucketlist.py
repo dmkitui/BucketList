@@ -157,7 +157,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Intro to Java', str(response6.data))
         self.assertIn('Intro to Python', str(response6.data))
 
-    def test_bucketlist_delete_list_item(self):
+    def test_delete_bucketlits(self):
         '''Test it can delete an existing bucketlist item'''
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
@@ -170,6 +170,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
                                          headers=dict(Authorization="Bearer " + self.token))
         data2 = json.loads(response3.data.decode())
 
+        self.assertEqual(response3.status_code, 200)
         self.assertEqual('Bucketlist No {} deleted successfully'.format(data['id']), data2['message'])
 
     def test_edit_existing_buckelist_items(self):
@@ -331,18 +332,20 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 201)
 
         data = json.loads(response2.data.decode())
-        buckelist_id = data['id']
+        bucketlist_id = data['id']
+        print('BUCKETLIST ID', bucketlist_id)
 
-        response3 = self.client().post('/api/v1/bucketlists/{}/items/'.format(buckelist_id),
+        response3 = self.client().post('/api/v1/bucketlists/{}/items/'.format(bucketlist_id),
                                       headers=dict(Authorization="Bearer " + self.token),
                                       data=dict(item_name='Intro to Python'))
 
-        data = json.loads(response3.data.decode())
-        item_id = data['id']
+        data2 = json.loads(response3.data.decode())
+        print('WWWWWWW', data2)
+        item_id = data2['id']
 
-        response4 = self.client().delete('/api/v1/bucketlists/{}/items/{}'.format(buckelist_id,
-                                                                                  item_id),
-                                      headers=dict(Authorization="Bearer " + self.token))
+        response4 = self.client().delete(
+            '/api/v1/bucketlists/{}/items/{}'.format(bucketlist_id,item_id),
+            headers=dict(Authorization="Bearer " + self.token))
         data = json.loads(response4.data.decode())
 
         self.assertEqual(response4.status_code, 200)
