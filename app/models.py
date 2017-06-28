@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 import jwt
 from datetime import datetime, timedelta
 from instance import config
+from ago import human
 
 
 class User(db.Model):
@@ -140,12 +141,32 @@ class MarshmallowSchemaBase(Schema):
     """Base class for the marshmallow classes"""
     __abstract__ = True  # Abstract class for use by inheriting classes.
     id = fields.Int()
-    date_created = fields.DateTime()
-    date_modified = fields.DateTime()
+    date_created = fields.Method('time_lapse_created', deserialize='created')
+    date_modified = fields.Method('time_lapse_modified', deserialize='modified')
+
+    def created(self, obj):
+        """method for deserializing date_created field"""
+        return obj.date_created
+
+    def modified(self, obj):
+        """method for deserializing date_modified field"""
+        return obj.date_modified
+
+    def time_lapse_created(self, obj):
+        """method to return time since created, modified in human readable fomart"""
+        return human(obj.date_created, 2)
+
+    def time_lapse_modified(self, obj):
+        """method to return time since created, modified in human readable fomart"""
+        if obj.date_created == obj.date_modified:
+            return '--'
+        return human(obj.date_modified, 2)
 
 
 class BucketlistItemsSchema(MarshmallowSchemaBase):
     """Class to map marshmallow fields and bucketlistitems class"""
+    class Meta:
+        ordered = True
 
     bucketlist_id = fields.Int()
     item_name = fields.Str(required=True, error_messages={'required':'Item name not provided'})
@@ -154,6 +175,8 @@ class BucketlistItemsSchema(MarshmallowSchemaBase):
 
 class BucketlistsSchema(MarshmallowSchemaBase):
     """Class to map the bucketlists objects to marshmallow fields"""
+    class Meta:
+        ordered = True
 
     name = fields.Str(required=True, error_messages={'required':'Bucketlist name not provided'})
     owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner Id not '

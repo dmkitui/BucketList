@@ -17,7 +17,7 @@ basic_auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth('Bearer')
 multi_auth = MultiAuth(basic_auth, token_auth)
 
-# Local import to avoid circular import nightmare
+# Local import to avoid circular import nightmares
 from .models import User, UserSchema, BucketlistItemsSchema, BucketlistsSchema
 
 # username and password verification
@@ -253,13 +253,11 @@ def create_app(config_name):
                         for y in range(len(list(items))):
                             item = items[y]
                             item_data, error = BucketlistItemsSchema().dump(item)
-                            item_data.update({'id': y+1 })
-                            item_data.update({'bucketlist_id': x+1})
+                            item_data.update({'id': y+1, 'bucketlist_id': x+1 })
                             items_data.append(item_data)
 
                     bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
-                    bucketlist_obj.update({'id': x+1})
-                    bucketlist_obj.update({'items': items_data if items_data else []})
+                    bucketlist_obj.update({'id': x+1, 'items': items_data if items_data else []})
                     bucketlists_details.append(bucketlist_obj)
 
                 response = bucketlists_details
@@ -340,8 +338,7 @@ def create_app(config_name):
 
             bucketist_obj = Bucketlists.query.filter_by(id=bucketlist.id).first()
             response, error = BucketlistsSchema().dump(bucketist_obj)
-            response.update({'message': 'Bucketlist updated'})
-            response.update({'id': bucketlist_id})
+            response.update({'message': 'Bucketlist updated', 'id': bucketlist_id})
 
             if error:
                 return error, 500
@@ -358,13 +355,11 @@ def create_app(config_name):
                 for y in range(len(list(items))):
                     item = items[y]
                     item_data, error = BucketlistItemsSchema().dump(item)
-                    item_data.update({'id': y + 1})
-                    item_data.update({'bucketlist_id': bucketlist_id})
+                    item_data.update({'id': y + 1, 'bucketlist_id': bucketlist_id})
                     items_data.append(item_data)
 
             bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
-            bucketlist_obj.update({'id': bucketlist_id})
-            bucketlist_obj.update({'items': items_data})
+            bucketlist_obj.update({'id': bucketlist_id, 'items': items_data})
 
             bucketlists_details.update(bucketlist_obj)
 
@@ -409,8 +404,7 @@ def create_app(config_name):
         list_object = BucketListItems.get(list_name)
 
         response, error = BucketlistItemsSchema().dump(list_object)
-        response.update({'id': len(list(items))})
-        response.update({'bucketlist_id': bucketlist_id})
+        response.update({'id': len(list(items)), 'bucketlist_id': bucketlist_id})
 
         if error:
             return error, 500
