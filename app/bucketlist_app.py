@@ -181,6 +181,7 @@ def create_app(config_name):
         all_args = request.args.to_dict()
         try:
             q = all_args['q']
+            # Check for empty search parameter
             if q == '':
                 return custom_response('Search parameter cannot be empty', 400)
         except KeyError:
@@ -215,11 +216,11 @@ def create_app(config_name):
             # request setting for use in bucketlist_data method for setting returned bucketlist id
             g.get_type = 'many'
             if list(user_bucketlists):
-                if q: # Apply search
-                    search_results = [bucketlist for bucketlist in user_bucketlists if
-                                            q.lower() in bucketlist.name.lower()]
+                if q:
+                    # Apply search
+                    search_results = [bucketlist for bucketlist in
+                                      user_bucketlists if q.lower() in bucketlist.name.lower()]
 
-                    # Check for empty search parameter
                     if not list(search_results):
                         return custom_response('No bucketlists with provided search parameter', 404)
 
@@ -277,7 +278,7 @@ def create_app(config_name):
                 return custom_response(msg, 409)
 
             if name in current_bucketlist_names:
-                msg = 'That bucketlist name already exists'
+                msg = 'Bucketlist name with specified name already exists'
                 return custom_response(msg, 409)
 
             bucketlist.name = name
