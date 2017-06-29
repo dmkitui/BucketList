@@ -218,8 +218,17 @@ def create_app(config_name):
             if list(user_bucketlists):
                 if q:
                     # Apply search
-                    search_results = [bucketlist for bucketlist in
-                                      user_bucketlists if q.lower() in bucketlist.name.lower()]
+                    # Evaluate number of search parameters
+                    q = q.split()
+                    if len(q) == 1:
+                        search_results = [bucketlist for bucketlist in
+                                          user_bucketlists if q[0].lower() in
+                                          bucketlist.name.lower()]
+                    else:
+                        search_results = []
+                        for bucketlist in user_bucketlists:
+                            if any(x.lower() in bucketlist.name.lower() for x in q):
+                                search_results.append(bucketlist)
 
                     if not list(search_results):
                         return custom_response('No bucketlists with provided search parameter', 404)
