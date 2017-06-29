@@ -79,16 +79,6 @@ def create_app(config_name):
 
     with app.app_context():  # Bind the app to current context
         db.create_all()  # create the tables
-    # Make sure each request runs in its own thread
-    # @app.before_request
-    # def before_request():
-    #     g.db = db
-    #     g.db.connect()
-    #
-    # @app.after_request
-    # def after_request(response):
-    #     g.db.close()
-    #     return response
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def auth_register():
@@ -222,7 +212,8 @@ def create_app(config_name):
         elif request.method == 'GET':
 
             user_bucketlists = g.user.bucketlists
-
+            # request setting for use in bucketlist_data method for setting returned bucketlist id
+            g.get_type = 'many'
             if list(user_bucketlists):
                 if q: # Apply search
                     search_results = [bucketlist for bucketlist in user_bucketlists if
@@ -258,6 +249,7 @@ def create_app(config_name):
 
         try:
             bucketlist = user_bucketlists[bucketlist_id - 1]
+            g.bucketlist_id = bucketlist_id
         except IndexError:
             msg = 'That bucketlist item does not exist'
             return custom_response(msg, 404)
@@ -291,7 +283,6 @@ def create_app(config_name):
             bucketlist.name = name
             bucketlist.date_modified = datetime.utcnow()
             bucketlist.save()
-            # bucketist_obj = Bucketlists.query.filter_by(id=bucketlist.id).first()
             response, error = BucketlistsSchema().dump(bucketlist)
             response.update({'message': 'Bucketlist updated', 'id': bucketlist_id})
 
@@ -301,23 +292,8 @@ def create_app(config_name):
             return response, 200
 
         elif request.method == 'GET':
-
-            # bucketlists_details = {}
-            # items = bucketlist.bucketlist_items
-            # items_data = []
-            # if list(items):
-            #     for y in range(len(list(items))):
-            #         item = items[y]
-            #         item_data, error = BucketlistItemsSchema().dump(item)
-            #         item_data.update({'id': y + 1, 'bucketlist_id': bucketlist_id})
-            #         items_data.append(item_data)
-            #
-            # bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
-            # bucketlist_obj.update({'id': bucketlist_id, 'items': items_data})
-            #
-            # bucketlists_details.update(bucketlist_obj)
-            #
-            # response = bucketlists_details
+            # Global setting for use in bucketlist_data method for assigning bucketlist id
+            g.get_type = 'one'
             response = bucketlist_data([bucketlist])
 
             return response, 200
@@ -458,6 +434,7 @@ def create_app(config_name):
         :param bucketlists: list of bucketlist objects
         :return: json data of the bucketlists data and bucketlist items
         """
+
         bucketlists_details = []
         for x in range(len(list(bucketlists))):
             bucketlist = bucketlists[x]
@@ -471,7 +448,11 @@ def create_app(config_name):
                     items_data.append(item_data)
 
             bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
-            bucketlist_obj.update({'id': x + 1, 'items': items_data})
+            if g.get_type == 'many':
+                current_id = x+1
+            else:
+                current_id = g.bucketlist_id
+            bucketlist_obj.update({'id': current_id, 'items': items_data})
             bucketlists_details.append(bucketlist_obj)
 
         return bucketlists_details
