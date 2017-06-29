@@ -350,22 +350,31 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         self.assertEqual('Bucketlist item No {} deleted successfully'.format(item_id), data['message'])
 
-    def test_bucketlist_search_success(self):
-        '''Test bucketlist items can be searched by name'''
+    def test_bucketlist_search_not_found(self):
+        '''Test bucketlist search by name no results'''
         response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
 
         self.assertEqual(response1.status_code, 201)
 
-        response2 = self.client().get('/api/v1/bucketlists?q=learn',
+        response2 = self.client().get('/api/v1/bucketlists/?q=travel',
                                       headers=dict(Authorization="Bearer " + self.token))
-        print(str(response2.data))
-        data = json.loads(response2.data.decode())
+
+        self.assertEqual(response2.status_code, 404)
+        self.assertIn('No bucketlists with provided search parameter', str(response2.data))
+
+    def test_search_success(self):
+        """test search functionality, success"""
+        response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(name='Learn Programming'))
+
+        self.assertEqual(response1.status_code, 201)
+
+        response2 = self.client().get('/api/v1/bucketlists/?q=program',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
         self.assertEqual(response2.status_code, 200)
-        self.assertEqual(data['message'], 'No bucketlists with provided search parameter')
-
-
-
+        self.assertIn('Learn Programming', str(response2.data))
 
 
     def test_bucketlist_pagination(self):
