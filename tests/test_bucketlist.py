@@ -4,10 +4,10 @@ from . import base_test
 
 
 class BucketListEndpoints(base_test.BaseBucketListCase):
-    '''The bucketlist manipulation tests'''
+    """The bucketlist manipulation tests"""
 
     def test_access_not_allowed(self):
-        '''Tests access to bucketlist not allowed to users not logged in'''
+        """Tests access to bucketlist not allowed to users not logged in"""
         response = self.client().get('/api/v1/bucketlists/')
         self.assertEqual(response.status_code, 401)
 
@@ -15,7 +15,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 401)
 
     def test_create_bucketlist(self):
-        '''Test it can create a bucketlist post request'''
+        """Test it can create a bucketlist post request"""
 
         response = self.client().post('/api/v1/bucketlists/',
                                       headers=dict(Authorization="Bearer " + self.token),
@@ -27,7 +27,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response.status_code, 201)
 
     def test_create_duplicate_bucketlist(self):
-        '''Test it can create a bucketlist post request'''
+        """Test it can create a bucketlist post request"""
 
         self.client().post('/api/v1/bucketlists/',
                            headers=dict(Authorization="Bearer " + self.token),
@@ -41,7 +41,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Bucketlist already exists', str(response.data))
 
     def test_create_bucketlist_name_not_specified(self):
-        '''Test it can create a bucketlist post request'''
+        """Test it can create a bucketlist post request"""
 
 
         response = self.client().post('/api/v1/bucketlists/',
@@ -52,7 +52,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response.status_code, 400)
 
     def test_get_non_existent_bucketlist(self):
-        '''test get for a non-existent-bucketlist'''
+        """test get for a non-existent-bucketlist"""
 
         response2 = self.client().get('/api/v1/bucketlists/101',
                                       headers=dict(Authorization="Bearer " + self.token))
@@ -61,7 +61,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('That bucketlist item does not exist', str(response2.data))
 
     def test_get_all_bucketlists(self):
-        '''Tests it can get all bucketlist'''
+        """Tests it can get all bucketlist"""
 
         response2 = self.client().post('/api/v1/bucketlists/',
                                        headers=dict(Authorization="Bearer " + self.token),
@@ -81,7 +81,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Travel the world', str(response4.data))
 
     def test_get_all_bucketlists_none_available(self):
-        '''test get when no buckelist exists'''
+        """test get when no buckelist exists"""
 
         response2 = self.client().get('/api/v1/bucketlists/',
                                       headers=dict(Authorization="Bearer " + self.token))
@@ -90,7 +90,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('No bucketlists available', str(response2.data))
 
     def test_edit_existing_bucketlist(self):
-        '''Test edit an existing bucketlist'''
+        """Test edit an existing bucketlist"""
 
         self.client().post('/api/v1/bucketlists/',
                            headers=dict(Authorization="Bearer " + self.token),
@@ -105,7 +105,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
 
     def test_edit_nonexistent_bucketlist(self):
-        '''Test edit a bucketlist that does not exist'''
+        """Test edit a bucketlist that does not exist"""
 
         #PUT on a non-existent bucketlist
         response2 = self.client().put('/api/v1/bucketlists/105',
@@ -116,7 +116,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('That bucketlist item does not exist', str(response2.data))
 
     def test_edit_bucketlist_name_not_given(self):
-        '''Test edit a bucketlist when update name is not given'''
+        """Test edit a bucketlist when update name is not given"""
 
         self.client().post('/api/v1/bucketlists/',
                            headers=dict(Authorization="Bearer " + self.token),
@@ -130,8 +130,28 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertTrue(response2.status_code == 400)
         self.assertIn('Error. No bucketlist name specified', str(response2.data))
 
+    def test_edit_bucketlist_name_to_already_existing_name(self):
+        """Test edit a bucketlist when update name simialr to an already existing bucketlist's 
+        name"""
+        self.client().post('/api/v1/bucketlists/',
+                           headers=dict(Authorization="Bearer " + self.token),
+                           data=dict(name='Learn Object Oriented Programming'))
+
+        self.client().post('/api/v1/bucketlists/',
+                           headers=dict(Authorization="Bearer " + self.token),
+                           data=dict(name='Learn Programming'))
+
+        #PUT with a name that is already used for another bucketlist
+        response2 = self.client().put('/api/v1/bucketlists/2',
+                                      headers=dict(Authorization="Bearer " + self.token),
+                                      data=dict(name='Learn Object Oriented Programming'))
+
+        self.assertTrue(response2.status_code == 409)
+        self.assertIn('Bucketlist name with specified name already exists', str(response2.data))
+
+
     def test_get_bucketlist_items(self):
-        '''Tests it can get all bucketlist items'''
+        """Tests it can get all bucketlist items"""
         
         response2 = self.client().post('/api/v1/bucketlists/',
                                        headers=dict(Authorization="Bearer " + self.token),
@@ -157,7 +177,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Intro to Python', str(response6.data))
 
     def test_delete_bucketlists(self):
-        '''Test it can delete an existing bucketlist item'''
+        """Test it can delete an existing bucketlist item"""
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -172,8 +192,8 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response3.status_code, 200)
         self.assertEqual('Bucketlist No {} deleted successfully'.format(data['id']), data2['message'])
 
-    def test_edit_existing_buckelist_items(self):
-        '''Test add items to bucketlist'''
+    def test_edit_existing_bucketlist_items(self):
+        """Test add items to bucketlist"""
 
         self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                            data=dict(name='Learn Programming'))
@@ -193,7 +213,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('No changes made.', str(response2.data))
 
     def test_edit_bucketlist_items_name(self):
-        '''Test it can edit a bucketlist item's name'''
+        """Test it can edit a bucketlist item's name"""
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -218,7 +238,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Item {} successfully updated'.format(item_id), data['message'])
 
     def test_edit_bucketlist_items_status(self):
-        '''Test it can edit a bucketlist item's done status'''
+        """Test it can edit a bucketlist item's done status"""
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -246,7 +266,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
 
     def test_edit_none_existent_bucketlist_item(self):
-        '''Test it can edit a bucketlist item that does not exist'''
+        """Test it can edit a bucketlist item that does not exist"""
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -264,7 +284,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('That bucketlist item does not exist', data['message'])
 
     def test_add_item_to_non_existent_bucketlist(self):
-        '''Test it cannot add item to a non existent bucketlist item'''
+        """Test it cannot add item to a non existent bucketlist item"""
 
         response3 = self.client().post('/api/v1/bucketlists/345/items/',
                                       headers=dict(Authorization="Bearer " + self.token),
@@ -275,7 +295,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual('That bucketlist does not exist', data['message'])
 
     def test_add_item_that_already_exists(self):
-        '''Test it cannot add item to when it already exists'''
+        """Test it cannot add item to when it already exists"""
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Travel the world'))
@@ -300,7 +320,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
 
     def test_edit_bucketlist_items_no_parameters(self):
-        '''Test it cannot edit a bucketlist item when no update parameters are given'''
+        """Test it cannot edit a bucketlist item when no update parameters are given"""
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -325,7 +345,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
 
     def test_delete_bucketlist_item(self):
-        '''Test it can delete a bucketlist item'''
+        """Test it can delete a bucketlist item"""
 
         response2 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -350,8 +370,20 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         self.assertEqual('Bucketlist item No {} deleted successfully'.format(item_id), data['message'])
 
+    def test_delete_bucketlist_item_in_bucketlist_that_does_exist(self):
+        """Test delete item for a bucketlist that does not exist"""
+
+        response = self.client().delete('/api/v1/bucketlists/12020/items/129',
+            headers=dict(Authorization="Bearer " + self.token))
+        data = json.loads(response.data.decode())
+
+        self.assertEqual(response.status_code, 404)
+
+        self.assertEqual('That bucketlist does not exist', data['message'])
+
+
     def test_bucketlist_search_not_found(self):
-        '''Test bucketlist search by name no results'''
+        """Test bucketlist search by name no results"""
         response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
 
@@ -363,7 +395,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 404)
         self.assertIn('No bucketlists with provided search parameter', str(response2.data))
 
-    def test_search_success(self):
+    def test_search_success_one_parameter(self):
         """test search functionality, success"""
         response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -376,9 +408,28 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 200)
         self.assertIn('Learn Programming', str(response2.data))
 
+    def test_search_success_many_parameter(self):
+        """test search functionality, for multiple parameters success"""
+        response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(name='Learn Programming'))
+
+        self.assertEqual(response1.status_code, 201)
+
+        response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(name='Travel The World'))
+
+        self.assertEqual(response1.status_code, 201)
+
+        response2 = self.client().get('/api/v1/bucketlists/?q=program+world',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
+        self.assertEqual(response2.status_code, 200)
+        self.assertIn('Learn Programming', str(response2.data))
+        self.assertIn('Travel The World', str(response2.data))
+
 
     def test_bucketlist_pagination(self):
-        '''Test the response is formatted by the requested page size'''
+        """Test the response is formatted by the requested page size"""
         pass
 
 
