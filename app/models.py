@@ -16,7 +16,7 @@ class User(db.Model):
     user_email = db.Column(db.String(256), nullable=False, unique=True)
     user_password = db.Column(db.String(256), nullable=False)
     date_registered = db.Column(db.DateTime, default=db.func.now())
-
+    bucketlists = db.relationship('Bucketlists')
     def __init__(self, user_email, user_password):
         """Initialize user with details"""
 
@@ -50,6 +50,11 @@ class User(db.Model):
         jwt_string = jwt.encode(payload, config.Config.SECRET, algorithm='HS256')
         return jwt_string
 
+    @staticmethod
+    def get_user(user_id):
+        """Method to return user object by user_id"""
+        return User.query.filter_by(id=user_id).first()
+
     # def delete_user(self):
     #     """Delete a user from db and all list items created by them"""
     #     db.session.remove(self)
@@ -80,11 +85,6 @@ class BucketlistBaseModel(db.Model):
     def save(self):
         """Method to save a new item"""
         db.session.add(self)
-        db.session.commit()
-        return self
-
-    def update(self):
-        """Method to apply changes to an item, user"""
         db.session.commit()
         return self
 
@@ -125,7 +125,8 @@ class Bucketlists(BucketlistBaseModel):
     __tablename__ = 'bucketlists'
 
     name = db.Column(db.String(256))
-    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))  # Owner of the bucketlist
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))    # Owner
+    bucketlist_items = db.relationship('BucketListItems')
 
     def __init__(self, name, owner_id):
         self.name = name
@@ -175,12 +176,15 @@ class BucketlistItemsSchema(MarshmallowSchemaBase):
 
 class BucketlistsSchema(MarshmallowSchemaBase):
     """Class to map the bucketlists objects to marshmallow fields"""
+    # Class meta ordered set to true so the serialized dictionary will always be ordered
+    # in the order the fields are declared
     class Meta:
         ordered = True
 
     name = fields.Str(required=True, error_messages={'required':'Bucketlist name not provided'})
     owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner Id not '
                                                                     'provided'})
+
     @validates('name')
     def name_validator(self, name):
         """Method to validate the name fields"""
