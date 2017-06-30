@@ -186,8 +186,8 @@ def create_app(config_name):
 
             name = data['name']
 
-            user_bucketlists = g.user.bucketlists
-            bucketlist_names = [bucketlist.name for bucketlist in user_bucketlists]
+            search_object = g.user.bucketlists
+            bucketlist_names = [bucketlist.name for bucketlist in search_object]
 
             if name in bucketlist_names:
                 msg = 'Bucketlist already exists'
@@ -198,7 +198,7 @@ def create_app(config_name):
 
             obj = Bucketlists.query.filter_by(name=name).first()
             response, error = BucketlistsSchema().dump(obj)
-            response.update({'id': len(list(user_bucketlists))+1})
+            response.update({'id': len(list(search_object))+1})
 
             return response, 201
 
@@ -211,13 +211,25 @@ def create_app(config_name):
             try:
                 limit = int(limit)
             except ValueError:
-                return custom_response('Limit parameter should be an integer', 400)
+                return custom_response('Limit parameter can only be integer', 400)
 
-            user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user.id)\
-                .paginate(page, limit, False).items
+            if limit > 100 or limit < 1:
+                return custom_response('Invalid limit value. Valid values are 1-100', 400)
+
+            search_object = Bucketlists.query.filter_by(owner_id=g.user.id)\
+                .paginate(page, limit, False)
+
+            user_bucketlists = search_object.items
             # request setting for use in bucketlist_data method for setting returned bucketlist id
             g.get_type = 'many'
-            if user_bucketlists:
+
+            # Set global value for next page, if present
+            g.prev_page = search_object.prev_num if search_object.has_prev else None
+
+            # Set global value for previous page if present
+            g.next_page = search_object.next_num if search_object.has_next else None
+
+            if search_object.items:
                 if q:
                     # Apply search
                     # Evaluate number of search parameters
@@ -304,6 +316,8 @@ def create_app(config_name):
         elif request.method == 'GET':
             # Global setting for use in bucketlist_data method for assigning bucketlist id
             g.get_type = 'one'
+            g.prev_page = None
+            g.next_page = None
             response = bucketlist_data([bucketlist])
 
             return response, 200
@@ -459,6 +473,12 @@ def create_app(config_name):
                 current_id = g.bucketlist_id
             bucketlist_obj.update({'id': current_id, 'items': items_data})
             bucketlists_details.append(bucketlist_obj)
+
+        if g.prev_page:
+            bucketlists_details.append({'previous_page_num': g.prev_page})
+
+        if g.next_page:
+            bucketlists_details.append({'next_page_num': g.next_page})
 
         return bucketlists_details
 

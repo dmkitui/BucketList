@@ -178,6 +178,10 @@ class BucketlistsSchema(MarshmallowSchemaBase):
     name = fields.Str(required=True, error_messages={'required':'Bucketlist name not provided'})
     owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner Id not '
                                                                     'provided'})
+    # has_next = fields.Boolean(dump_only=True)
+    # has_prev = fields.Boolean(dump_only=True)
+    # next_num = fields.Int(dump_only=True)
+    # prev_num = fields.Int(dump_only=True)
 
     @validates('name')
     def name_validator(self, name):
