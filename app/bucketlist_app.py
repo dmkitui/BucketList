@@ -176,16 +176,8 @@ def create_app(config_name):
 
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
     @multi_auth.login_required
-    def bucketlists_all():
+    def bucketlists_all(page=1):
         """Route to create or get list of bucketlist items"""
-        all_args = request.args.to_dict()
-        try:
-            q = all_args['q']
-            # Check for empty search parameter
-            if q == '':
-                return custom_response('Search parameter cannot be empty', 400)
-        except KeyError:
-            q = None
 
         if request.method == 'POST':
             data, error = BucketlistsSchema(partial=('owner_id', 'id',)).load(request.data)
@@ -211,11 +203,21 @@ def create_app(config_name):
             return response, 201
 
         elif request.method == 'GET':
+            q = request.args.get('q', type=str)
+            limit = request.args.get('limit', default=20, type=None)
+            if q == '':
+                return custom_response('Query parameter cannot be empty', 400)
 
-            user_bucketlists = g.user.bucketlists
+            try:
+                limit = int(limit)
+            except ValueError:
+                return custom_response('Limit parameter should be an integer', 400)
+
+            user_bucketlists = Bucketlists.query.filter_by(owner_id=g.user.id)\
+                .paginate(page, limit, False).items
             # request setting for use in bucketlist_data method for setting returned bucketlist id
             g.get_type = 'many'
-            if list(user_bucketlists):
+            if user_bucketlists:
                 if q:
                     # Apply search
                     # Evaluate number of search parameters
@@ -232,6 +234,7 @@ def create_app(config_name):
 
                     if not list(search_results):
                         return custom_response('No bucketlists with provided search parameter', 404)
+
 
                     response = bucketlist_data(search_results)
 
@@ -278,17 +281,14 @@ def create_app(config_name):
             try:
                 name = data['name']
             except KeyError:
-                msg = 'Update name not given'
-                return custom_response(msg, 400)
+                return custom_response('Update name not given', 400)
 
             current_bucketlist_names = [bucketlist.name for bucketlist in user_bucketlists]
             if name == bucketlist.name:
-                msg = 'No changes made.'
-                return custom_response(msg, 409)
+                return custom_response('No changes made.', 409)
 
             if name in current_bucketlist_names:
-                msg = 'Bucketlist name with specified name already exists'
-                return custom_response(msg, 409)
+                return custom_response('Bucketlist name with specified name already exists', 409)
 
             bucketlist.name = name
             bucketlist.date_modified = datetime.utcnow()
@@ -318,8 +318,7 @@ def create_app(config_name):
         try:
             bucketlist = user_bucketlists[(bucketlist_id - 1)]
         except IndexError:
-            msg = 'That bucketlist does not exist'
-            return custom_response(msg, 404)
+            return custom_response('That bucketlist does not exist', 404)
 
         items = bucketlist.bucketlist_items
 
@@ -332,8 +331,7 @@ def create_app(config_name):
         if list(items):
             item_names = [item.item_name for item in items]
             if list_name in item_names:
-                msg = 'The item already in list'
-                return custom_response(msg, 409)
+                return custom_response('The item already in list', 409)
 
         new_item = BucketListItems(item_name=list_name, bucketlist_id=bucketlist.id)
         new_item.save()
@@ -358,8 +356,7 @@ def create_app(config_name):
         try:
             bucketlist = user_bucketlists[int(bucketlist_id) - 1]
         except IndexError:
-            msg = 'That bucketlist does not exist'
-            return custom_response(msg, 404)
+            return custom_response('That bucketlist does not exist', 404)
 
         items = bucketlist.bucketlist_items
 
@@ -367,8 +364,7 @@ def create_app(config_name):
             item = items[int(item_id)-1]
 
         except IndexError:
-            msg = 'That bucketlist item does not exist'
-            return custom_response(msg, 404)
+            return custom_response('That bucketlist item does not exist', 404)
 
         if request.method == 'PUT':
             data, error = BucketlistItemsSchema(partial=True).load(request.data)
@@ -422,8 +418,7 @@ def create_app(config_name):
         elif request.method == 'DELETE':
 
             item.delete()
-            msg = 'Bucketlist item No {} deleted successfully'.format(item_id)
-            return custom_response(msg, 200)
+            return custom_response('Bucketlist item No {} deleted successfully'.format(item_id), 200)
 
     def custom_response(msg, status_code):
         """
