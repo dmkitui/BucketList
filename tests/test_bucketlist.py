@@ -395,6 +395,17 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 404)
         self.assertIn('No bucketlists with provided search parameter', str(response2.data))
 
+
+    def test_bucketlist_search_no_search_parameter(self):
+        """Test bucketlist search when no parameter given"""
+
+        response2 = self.client().get('/api/v1/bucketlists/?q=',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
+        self.assertEqual(response2.status_code, 400)
+        self.assertIn('Query parameter cannot be empty', str(response2.data))
+
+
     def test_search_success_one_parameter(self):
         """test search functionality, success"""
         response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
