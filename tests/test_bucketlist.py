@@ -40,7 +40,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response.status_code, 409)
         self.assertIn('Bucketlist already exists', str(response.data))
 
-    def test_create_bucketlist_name_not_specified(self):
+    def test_create_bucketlist_name_not_incorrect(self):
         """Test it can create a bucketlist post request"""
 
 
@@ -50,6 +50,14 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         self.assertIn('Error. No bucketlist name specified', str(response.data))
         self.assertEqual(response.status_code, 400)
+
+        response2 = self.client().post('/api/v1/bucketlists/',
+                                      headers=dict(Authorization="Bearer " + self.token),
+                                      data=dict(name='2017'))
+
+        self.assertIn('Integers only not allowed for the names field', str(response2.data))
+        self.assertEqual(response2.status_code, 400)
+
 
     def test_get_non_existent_bucketlist(self):
         """test get for a non-existent-bucketlist"""
@@ -438,10 +446,21 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Learn Programming', str(response2.data))
         self.assertIn('Travel The World', str(response2.data))
 
-
     def test_bucketlist_pagination(self):
-        """Test the response is formatted by the requested page size"""
-        pass
+        """Test the page limit restrictions"""
+        response = self.client().get('/api/v1/bucketlists/?limit=101',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Invalid limit value. Valid values are 1-100', str(response.data))
+
+        response2 = self.client().get('/api/v1/bucketlists/?limit=no',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
+        self.assertEqual(response2.status_code, 400)
+        self.assertIn('Limit parameter can only be integer', str(response2.data))
+
+
 
 
 if __name__ == '__main__':
