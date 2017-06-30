@@ -113,12 +113,6 @@ class BucketListItems(BucketlistBaseModel):
         """Method to return a bucketlist items specified by bucketlist_id"""
         return BucketListItems.query.filter_by(bucketlist_id=bucketlist_id)
 
-    @staticmethod
-    def get(name):
-        """Method to get one bucketlist item by name"""
-        obj = BucketListItems.query.filter_by(item_name=name).first()
-        return obj
-
 
 class Bucketlists(BucketlistBaseModel):
     """Class for Bucketlist data"""
