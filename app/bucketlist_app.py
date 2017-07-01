@@ -8,6 +8,7 @@ from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth, MultiAuth
 from instance import config
 from flask_bcrypt import Bcrypt
 from datetime import datetime
+from sqlalchemy import func
 
 # initialize sql-alchemy
 db = SQLAlchemy()
@@ -186,8 +187,8 @@ def create_app(config_name):
 
             name = data['name']
 
-            search_object = g.user.bucketlists
-            bucketlist_names = [bucketlist.name for bucketlist in search_object]
+            bucketlists = g.user.bucketlists
+            bucketlist_names = [bucketlist.name for bucketlist in bucketlists]
 
             if name in bucketlist_names:
                 msg = 'Bucketlist already exists'
@@ -198,7 +199,7 @@ def create_app(config_name):
 
             obj = Bucketlists.query.filter_by(name=name).first()
             response, error = BucketlistsSchema().dump(obj)
-            response.update({'id': len(list(search_object))+1})
+            response.update({'id': len(list(bucketlists))+1})
 
             return response, 201
 
@@ -211,55 +212,43 @@ def create_app(config_name):
             try:
                 limit = int(limit)
             except ValueError:
-                return custom_response('Limit parameter can only be integer', 400)
+                return custom_response('Limit parameter can only be a positive integer', 400)
 
-            if limit > 100 or limit < 1:
+            if not (0 < limit < 101):
                 return custom_response('Invalid limit value. Valid values are 1-100', 400)
 
-            search_object = Bucketlists.query.filter_by(owner_id=g.user.id)\
-                .paginate(page, limit, False)
-
-            user_bucketlists = search_object.items
-            # request setting for use in bucketlist_data method for setting returned bucketlist id
+            # global setting for use in bucketlist_data method for setting returned bucketlist id
             g.get_type = 'many'
 
-            # Set global value for next page, if present
-            g.prev_page = search_object.prev_num if search_object.has_prev else None
+            if q:
+                # Apply search
+                match = Bucketlists.query.filter(func.lower(Bucketlists.name).contains(q.lower()))
 
-            # Set global value for previous page if present
-            g.next_page = search_object.next_num if search_object.has_next else None
+                bucketlists = match.filter_by(owner_id=g.user.id).paginate(page, limit, False)
 
-            if search_object.items:
-                if q:
-                    # Apply search
-                    # Evaluate number of search parameters
-                    q = q.split()
-                    if len(q) == 1:
-                        search_results = [bucketlist for bucketlist in
-                                          user_bucketlists if q[0].lower() in
-                                          bucketlist.name.lower()]
-                    else:
-                        search_results = []
-                        for bucketlist in user_bucketlists:
-                            if any(x.lower() in bucketlist.name.lower() for x in q):
-                                search_results.append(bucketlist)
-
-                    if not list(search_results):
-                        return custom_response('No bucketlists with provided search parameter', 404)
-
-
-                    response = bucketlist_data(search_results)
-
-                    return response, 200
-
-                else:
-                    response = bucketlist_data(user_bucketlists)
-
-                    return response, 200
+                if not bucketlists.items:
+                    return custom_response('No bucketlists with provided search parameter', 404)
 
             else:
-                msg = 'No bucketlists available'
-                return custom_response(msg, 200)
+                bucketlists = Bucketlists.query.filter_by(owner_id=g.user.id).paginate(page,
+                                                                                       limit,
+                                                                                       False)
+                if not bucketlists.items:
+                    return custom_response('No bucketlists available', 200)
+
+            response = bucketlist_data(bucketlists.items)
+
+            if bucketlists.has_prev:
+                response.has_prev = True
+                response.prev_num = bucketlists.prev_num
+
+            if bucketlists.has_next:
+                response.has_next = True
+                response.next_num = bucketlists.next_num
+
+            return response, 200
+
+
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
     @multi_auth.login_required
@@ -349,6 +338,8 @@ def create_app(config_name):
 
         new_item = BucketListItems(item_name=list_name, bucketlist_id=bucketlist.id)
         new_item.save()
+        bucketlist.date_modified = datetime.utcnow()
+        bucketlist.save()
 
         response, error = BucketlistItemsSchema().dump(new_item)
         response.update({'id': len(list(items)), 'bucketlist_id': bucketlist_id})
@@ -474,12 +465,6 @@ def create_app(config_name):
             bucketlist_obj.update({'id': current_id, 'items': items_data})
             bucketlists_details.append(bucketlist_obj)
 
-        if g.prev_page:
-            bucketlists_details.append({'previous_page_num': g.prev_page})
-
-        if g.next_page:
-            bucketlists_details.append({'next_page_num': g.next_page})
-
-        return bucketlists_details
+        return jsonify(bucketlists_details)
 
     return app
