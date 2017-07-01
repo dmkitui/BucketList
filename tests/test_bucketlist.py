@@ -414,7 +414,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Query parameter cannot be empty', str(response2.data))
 
 
-    def test_search_success_one_parameter(self):
+    def test_search_success(self):
         """test search functionality, success"""
         response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
@@ -427,24 +427,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 200)
         self.assertIn('Learn Programming', str(response2.data))
 
-    def test_search_success_many_parameter(self):
-        """test search functionality, for multiple parameters success"""
-        response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
-                                       data=dict(name='Learn Programming'))
-
-        self.assertEqual(response1.status_code, 201)
-
-        response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
-                                       data=dict(name='Travel The World'))
-
-        self.assertEqual(response1.status_code, 201)
-
-        response2 = self.client().get('/api/v1/bucketlists/?q=program+world',
-                                      headers=dict(Authorization="Bearer " + self.token))
-
-        self.assertEqual(response2.status_code, 200)
-        self.assertIn('Learn Programming', str(response2.data))
-        self.assertIn('Travel The World', str(response2.data))
 
     def test_bucketlist_pagination(self):
         """Test the page limit restrictions"""
@@ -458,10 +440,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
                                       headers=dict(Authorization="Bearer " + self.token))
 
         self.assertEqual(response2.status_code, 400)
-        self.assertIn('Limit parameter can only be integer', str(response2.data))
-
-
-
+        self.assertIn('Limit parameter can only be a positive integer', str(response2.data))
 
 if __name__ == '__main__':
     unittest.main()
