@@ -55,11 +55,6 @@ class User(db.Model):
         """Method to return user object by user_id"""
         return User.query.filter_by(id=user_id).first()
 
-    # def delete_user(self):
-    #     """Delete a user from db and all list items created by them"""
-    #     db.session.remove(self)
-    #     db.session.commit()
-
 
 class UserSchema(Schema):
     """Class mapping for User objects to marshmallow fields"""
@@ -119,7 +114,7 @@ class Bucketlists(BucketlistBaseModel):
     __tablename__ = 'bucketlists'
 
     name = db.Column(db.String(256))
-    owner_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))    # Owner
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
     bucketlist_items = db.relationship('BucketListItems')
 
     def __init__(self, name, owner_id):
@@ -160,6 +155,8 @@ class MarshmallowSchemaBase(Schema):
 
 class BucketlistItemsSchema(MarshmallowSchemaBase):
     """Class to map marshmallow fields and bucketlistitems class"""
+    # Class meta ordered set to true so the serialized dictionary will always be ordered
+    # in the order the fields are declared
     class Meta:
         ordered = True
 
@@ -178,10 +175,6 @@ class BucketlistsSchema(MarshmallowSchemaBase):
     name = fields.Str(required=True, error_messages={'required':'Bucketlist name not provided'})
     owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner Id not '
                                                                     'provided'})
-    # has_next = fields.Boolean(dump_only=True)
-    # has_prev = fields.Boolean(dump_only=True)
-    # next_num = fields.Int(dump_only=True)
-    # prev_num = fields.Int(dump_only=True)
 
     @validates('name')
     def name_validator(self, name):
