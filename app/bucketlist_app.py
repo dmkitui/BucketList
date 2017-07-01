@@ -112,23 +112,19 @@ def create_app(config_name):
                       'an uppercase letter, and a digit'
                 return custom_response(msg, 400)
 
-            try:
-                new_user = User(user_email=user_email, user_password=user_password)
-                new_user.save()
+            new_user = User(user_email=user_email, user_password=user_password)
+            new_user.save()
 
-                obj = User.query.filter_by(user_email=user_email).first()
+            obj = User.query.filter_by(user_email=user_email).first()
 
-                response, error = UserSchema().dump(obj)
+            response, error = UserSchema().dump(obj)
 
-                if error:
-                    return error, 500
+            if error:
+                return error, 500
 
-                response.update({'message':'Registration successful, welcome to Bucketlist'})
+            response.update({'message':'Registration successful, welcome to Bucketlist'})
 
-                return response, 201
-
-            except Exception as error: # When an error occurs
-                return custom_response(str(error), 500)
+            return response, 201
 
     def strong_password(password):
         """
