@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 import jwt
 from datetime import datetime, timedelta
 from instance import config
+from ago import human
 
 
 class User(db.Model):
@@ -15,7 +16,7 @@ class User(db.Model):
     user_email = db.Column(db.String(256), nullable=False, unique=True)
     user_password = db.Column(db.String(256), nullable=False)
     date_registered = db.Column(db.DateTime, default=db.func.now())
-
+    bucketlists = db.relationship('Bucketlists')
     def __init__(self, user_email, user_password):
         """Initialize user with details"""
 
@@ -49,10 +50,10 @@ class User(db.Model):
         jwt_string = jwt.encode(payload, config.Config.SECRET, algorithm='HS256')
         return jwt_string
 
-    def delete_user(self):
-        """Delete a user from db and all list items created by them"""
-        db.session.remove(self)
-        db.session.commit()
+    @staticmethod
+    def get_user(user_id):
+        """Method to return user object by user_id"""
+        return User.query.filter_by(id=user_id).first()
 
 
 class UserSchema(Schema):
@@ -73,17 +74,12 @@ class BucketlistBaseModel(db.Model):
 
     __abstract__ = True  # Abstract class for use only inheriting classes.
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    date_created = db.Column(db.DateTime, default=db.func.now())
-    date_modified = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+    date_created = db.Column(db.DateTime(), default=db.func.now())
+    date_modified = db.Column(db.DateTime(), default=db.func.now(), onupdate=db.func.now())
 
     def save(self):
         """Method to save a new item"""
         db.session.add(self)
-        db.session.commit()
-        return self
-
-    def update(self):
-        """Method to apply changes to an item, user"""
         db.session.commit()
         return self
 
@@ -98,7 +94,6 @@ class BucketListItems(BucketlistBaseModel):
 
     ___tablename__ = 'bucketlist_items'
 
-    id = db.Column(db.Integer, primary_key=True)
     # Id the bucketlist belongs to
     bucketlist_id = db.Column(db.Integer, db.ForeignKey('bucketlists.id', ondelete='CASCADE'))
     item_name = db.Column(db.String(255))  # Name of the bucket list item
@@ -109,33 +104,45 @@ class BucketListItems(BucketlistBaseModel):
         self.bucketlist_id = bucketlist_id
 
     @staticmethod
-    def get(item_id):
-        return BucketListItems.query.filter_by(item_id=item_id)
+    def get_all(bucketlist_id):
+        """Method to return a bucketlist items specified by bucketlist_id"""
+        return BucketListItems.query.filter_by(bucketlist_id=bucketlist_id)
 
 
 class Bucketlists(BucketlistBaseModel):
     """Class for Bucketlist data"""
     __tablename__ = 'bucketlists'
 
-    id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(256))
-    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'))  # Owner of the bucketlist
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'))
+    bucketlist_items = db.relationship('BucketListItems')
 
     def __init__(self, name, owner_id):
         self.name = name
         self.owner_id = owner_id
 
+    @staticmethod
+    def get_all(owner_id):
+        """Method to get list of all bucketlist items"""
+        return Bucketlists.query.filter_by(owner_id=owner_id)
+
 
 class MarshmallowSchemaBase(Schema):
     """Base class for the marshmallow classes"""
+    class Meta:
+        ordered = True
     __abstract__ = True  # Abstract class for use by inheriting classes.
     id = fields.Int()
-    date_created = fields.DateTime()
-    date_modified = fields.DateTime()
+    date_created = fields.DateTime('%Y-%m-%d %H:%M:%S')
+    date_modified = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
 
-class BuckelistItemsSchema(MarshmallowSchemaBase):
+class BucketlistItemsSchema(MarshmallowSchemaBase):
     """Class to map marshmallow fields and bucketlistitems class"""
+    # Class meta ordered set to true so the serialized dictionary will always be ordered
+    # in the order the fields are declared
+    class Meta:
+        ordered = True
 
     bucketlist_id = fields.Int()
     item_name = fields.Str(required=True, error_messages={'required':'Item name not provided'})
@@ -144,9 +151,14 @@ class BuckelistItemsSchema(MarshmallowSchemaBase):
 
 class BucketlistsSchema(MarshmallowSchemaBase):
     """Class to map the bucketlists objects to marshmallow fields"""
+    # Class meta ordered set to true so the serialized dictionary will always be ordered
+    # in the order the fields are declared
+    class Meta:
+        ordered = True
 
     name = fields.Str(required=True, error_messages={'required':'Bucketlist name not provided'})
-    owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner not provided'})
+    owner_id = fields.Int(required=True, error_messages={'required':'Bucketlist Owner Id not '
+                                                                    'provided'})
 
     @validates('name')
     def name_validator(self, name):
