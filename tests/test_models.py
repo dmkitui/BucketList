@@ -1,26 +1,28 @@
-# from base import BaseTestCase
-from app.models import User, Bucketlists, BucketListItems
-from app.main_app import create_app, db
 import unittest
+from app.models import Bucketlists, BucketListItems
+from . import base_test
 
+from app import bucketlist_app
 
+db = bucketlist_app.db
+User = bucketlist_app.User
 
 class ModelsTests(unittest.TestCase):
     '''Class for the model tests'''
 
     def setUp(self):
-        self.app = create_app(config_name='testing')
+        '''Setup method for each test case'''
+
+        self.app = bucketlist_app.create_app(config_name='testing')
         self.client = self.app.test_client
-        db.create_all()  # create the tables
 
         self.user_email = 'dan@example.org'
         self.user_password = 'password0122'
         self.person = User(self.user_email, self.user_password)
 
-    def tearDown(self):
-        db.session.close()
-        db.drop_all()
-
+        self.cntx = self.app.app_context() # Bind the app to current context
+        self.cntx.push()
+        db.create_all()  # create the tables
 
     def test_add_person(self):
         '''Test it adds a user to the database'''
@@ -33,8 +35,7 @@ class ModelsTests(unittest.TestCase):
 
     def test_it_generates_a_user_token(self):
         '''Test it generates a user token'''
-        pass
-
+        self.person.save()
 
 
     def test_query_user_by_email(self):
@@ -100,18 +101,8 @@ class ModelsTests(unittest.TestCase):
 
         self.assertTrue(current_count == (initial_count + 1))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def tearDown(self):
+        '''Clean the test environment'''
+        db.session.close()
+        db.drop_all()
+        self.cntx.pop()
