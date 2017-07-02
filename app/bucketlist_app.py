@@ -233,18 +233,31 @@ def create_app(config_name):
                     return custom_response('No bucketlists available', 200)
 
             response = bucketlist_data(bucketlists.items)
-
+            link = ''
             if bucketlists.has_prev:
                 response.has_prev = True
                 response.prev_num = bucketlists.prev_num
+                previous_page = (str(request.url_root) + "api/v1/bucketlists?" + "limit=" +
+                                 str(limit) + "&page=" + str(page - 1))
+                link += '<'+previous_page+'>' + '; rel="prev", '
 
             if bucketlists.has_next:
                 response.has_next = True
                 response.next_num = bucketlists.next_num
+                next_page = (request.url_root + "api/v1/bucketlists?" + "limit=" + str(limit) +
+                             "&page=" + str(page + 1))
+                link += '<'+next_page+'>' + '; rel="next", '
+
+            if bucketlists.pages:
+                last_page = (request.url_root + "api/v1/bucketlists?" + "limit=" + str(limit) +
+                             "&page=" + str(bucketlists.pages))
+                link += '<'+last_page+'>' + '; rel="last"'
+
+            if link:
+                response.headers['Link'] = link
+
 
             return response, 200
-
-
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
     @multi_auth.login_required
