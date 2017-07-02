@@ -194,8 +194,13 @@ def create_app(config_name):
             bucketlist.save()
 
             obj = Bucketlists.query.filter_by(name=name).first()
-            response, error = BucketlistsSchema().dump(obj)
-            response.update({'id': len(list(bucketlists))+1})
+            output, error = BucketlistsSchema().dump(obj)
+
+            bucketlist_id = len(list(bucketlists)) + 1
+            output.update({'id': bucketlist_id})
+            response = jsonify(output)
+            response.headers['Location'] = (str(request.url_root) + 'api/v1/bucketlists/' +
+                                            str(bucketlist_id))
 
             return response, 201
 
@@ -350,11 +355,17 @@ def create_app(config_name):
         bucketlist.date_modified = datetime.now()
         bucketlist.save()
 
-        response, error = BucketlistItemsSchema().dump(new_item)
-        response.update({'id': len(list(items)), 'bucketlist_id': bucketlist_id})
-
+        output, error = BucketlistItemsSchema().dump(new_item)
         if error:
             return error, 500
+
+        list_id = len(list(items)) + 1
+        output.update({'id': list_id, 'bucketlist_id': bucketlist_id})
+        response = jsonify(output)
+
+        response.headers['Location'] = (str(request.url_root) +
+                                        'api/v1/bucketlists/{}/items/{}'
+                                        .format(str(bucketlist_id), str(list_id)))
 
         return response, 201
 
