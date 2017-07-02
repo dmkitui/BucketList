@@ -74,8 +74,8 @@ class BucketlistBaseModel(db.Model):
 
     __abstract__ = True  # Abstract class for use only inheriting classes.
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    date_created = db.Column(db.DateTime, default=db.func.now())
-    date_modified = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
+    date_created = db.Column(db.DateTime(), default=db.func.now())
+    date_modified = db.Column(db.DateTime(), default=db.func.now(), onupdate=db.func.now())
 
     def save(self):
         """Method to save a new item"""
@@ -129,28 +129,12 @@ class Bucketlists(BucketlistBaseModel):
 
 class MarshmallowSchemaBase(Schema):
     """Base class for the marshmallow classes"""
+    class Meta:
+        ordered = True
     __abstract__ = True  # Abstract class for use by inheriting classes.
     id = fields.Int()
-    date_created = fields.Method('time_lapse_created', deserialize='created')
-    date_modified = fields.Method('time_lapse_modified', deserialize='modified')
-
-    def created(self, obj):
-        """method for deserializing date_created field"""
-        return obj.date_created
-
-    def modified(self, obj):
-        """method for deserializing date_modified field"""
-        return obj.date_modified
-
-    def time_lapse_created(self, obj):
-        """method to return time since created, modified in human readable fomart"""
-        return human(obj.date_created, 2)
-
-    def time_lapse_modified(self, obj):
-        """method to return time since created, modified in human readable fomart"""
-        if obj.date_created == obj.date_modified:
-            return '--'
-        return human(obj.date_modified, 2)
+    date_created = fields.DateTime('%Y-%m-%d %H:%M:%S')
+    date_modified = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
 
 class BucketlistItemsSchema(MarshmallowSchemaBase):
