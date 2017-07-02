@@ -288,7 +288,7 @@ def create_app(config_name):
                 return custom_response('Bucketlist name with specified name already exists', 409)
 
             bucketlist.name = name
-            bucketlist.date_modified = datetime.utcnow()
+            bucketlist.date_modified = datetime.now()
             bucketlist.save()
             response, error = BucketlistsSchema().dump(bucketlist)
             response.update({'message': 'Bucketlist updated', 'id': bucketlist_id})
@@ -334,7 +334,7 @@ def create_app(config_name):
 
         new_item = BucketListItems(item_name=list_name, bucketlist_id=bucketlist.id)
         new_item.save()
-        bucketlist.date_modified = datetime.utcnow()
+        bucketlist.date_modified = datetime.now()
         bucketlist.save()
 
         response, error = BucketlistItemsSchema().dump(new_item)
@@ -386,7 +386,7 @@ def create_app(config_name):
                     pass
                 else:
                     item.done = status
-                    item.date_modified = datetime.utcnow()
+                    item.date_modified = datetime.now()
                     item.save()
                     msg += ' Status updated '
 
@@ -395,7 +395,7 @@ def create_app(config_name):
                     pass
                 else:
                     item.item_name = new_name
-                    item.date_modified = datetime.utcnow()
+                    item.date_modified = datetime.now()
                     item.save()
                     msg += ' Name updated '
 
@@ -403,7 +403,7 @@ def create_app(config_name):
                 msg =  'No update made'
                 return custom_response(msg, 409)
 
-            bucketlist.date_modified = datetime.utcnow()
+            bucketlist.date_modified = datetime.now()
             bucketlist.save()
 
             response, error = BucketlistItemsSchema().dump(item)
