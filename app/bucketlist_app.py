@@ -9,8 +9,6 @@ from instance import config
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from sqlalchemy import func
-from flasgger import Swagger
-from flasgger import swag_from
 
 
 
@@ -77,7 +75,6 @@ def create_app(config_name):
     from app.models import Bucketlists, BucketListItems
 
     app = FlaskAPI(__name__, instance_relative_config=True)
-    swagger = Swagger(app)
 
     # Preload configurations from app_config object
     app.config.from_object(app_config[config_name])
@@ -94,7 +91,6 @@ def create_app(config_name):
         db.create_all()
 
     @app.route('/api/v1/auth/register', methods=['POST'])
-    @swag_from('docs/register.yml')
     def auth_register():
         """Route for new users to register for the service"""
 
@@ -151,42 +147,37 @@ def create_app(config_name):
                any(digit in password for digit in digits)
 
     @app.route('/api/v1/auth/login', methods=['POST'])
-    @swag_from('docs/login.yml')
     def auth_login():
         """Route for Login"""
-        try:
-            data, error = UserSchema(partial=('confirm_password',)).load(request.data)
-            if error:
-                return error, 400
+        data, error = UserSchema(partial=('confirm_password',)).load(request.data)
+        if error:
+            return error, 400
 
-            user_email = data['user_email']
-            user_password = data['user_password']
+        user_email = data['user_email']
+        user_password = data['user_password']
 
-            user = User.query.filter_by(user_email=user_email).first()
+        user = User.query.filter_by(user_email=user_email).first()
 
-            if not user:
-                msg = 'User {} does not exist. Register to access the service'.format(user_email)
-                return custom_response(msg, 401)
+        if not user:
+            msg = 'User {} does not exist. Register to access the service'.format(user_email)
+            return custom_response(msg, 401)
+        else:
+            if user and user.password_validator(user_password):
+                access_token = user.generate_user_token(user.id)
+                if access_token:
+                    response = jsonify({
+                        'message': 'Login successful',
+                        'access_token': access_token.decode(),
+                    })
+                    response.status_code = 200
+                    return response
+
             else:
-                if user and user.password_validator(user_password):
-                    access_token = user.generate_user_token(user.id)
-                    if access_token:
-                        response = jsonify({
-                            'message': 'Login successful',
-                            'access_token': access_token.decode(),
-                        })
-                        response.status_code = 200
-                        return response
+                msg = 'Incorrect email or password'
+                return custom_response(msg, 401)
 
-                else:
-                    msg = 'Incorrect email or password'
-                    return custom_response(msg, 401)
-        # To return any uncaught server errors
-        except Exception as error:
-            return custom_response(str(error), 500)
 
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
-    @swag_from('docs/bucketlists_get.yml')
     @multi_auth.login_required
     def bucketlists_all(page=1):
         """Route to create or get list of bucketlist items"""
