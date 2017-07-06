@@ -194,8 +194,13 @@ def create_app(config_name):
             bucketlist.save()
 
             obj = Bucketlists.query.filter_by(name=name).first()
-            response, error = BucketlistsSchema().dump(obj)
-            response.update({'id': len(list(bucketlists))+1})
+            output, error = BucketlistsSchema().dump(obj)
+
+            bucketlist_id = len(list(bucketlists)) + 1
+            output.update({'id': bucketlist_id})
+            response = jsonify(output)
+            response.headers['Location'] = (str(request.url_root) + 'api/v1/bucketlists/' +
+                                            str(bucketlist_id))
 
             return response, 201
 
@@ -233,18 +238,31 @@ def create_app(config_name):
                     return custom_response('No bucketlists available', 200)
 
             response = bucketlist_data(bucketlists.items)
-
+            link = ''
             if bucketlists.has_prev:
                 response.has_prev = True
                 response.prev_num = bucketlists.prev_num
+                previous_page = (str(request.url_root) + "api/v1/bucketlists?" + "limit=" +
+                                 str(limit) + "&page=" + str(page - 1))
+                link += '<'+previous_page+'>' + '; rel="prev", '
 
             if bucketlists.has_next:
                 response.has_next = True
                 response.next_num = bucketlists.next_num
+                next_page = (request.url_root + "api/v1/bucketlists?" + "limit=" + str(limit) +
+                             "&page=" + str(page + 1))
+                link += '<'+next_page+'>' + '; rel="next", '
+
+            if bucketlists.pages:
+                last_page = (request.url_root + "api/v1/bucketlists?" + "limit=" + str(limit) +
+                             "&page=" + str(bucketlists.pages))
+                link += '<'+last_page+'>' + '; rel="last"'
+
+            if link:
+                response.headers['Link'] = link
+
 
             return response, 200
-
-
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
     @multi_auth.login_required
@@ -337,11 +355,17 @@ def create_app(config_name):
         bucketlist.date_modified = datetime.now()
         bucketlist.save()
 
-        response, error = BucketlistItemsSchema().dump(new_item)
-        response.update({'id': len(list(items)), 'bucketlist_id': bucketlist_id})
-
+        output, error = BucketlistItemsSchema().dump(new_item)
         if error:
             return error, 500
+
+        list_id = len(list(items)) + 1
+        output.update({'id': list_id, 'bucketlist_id': bucketlist_id})
+        response = jsonify(output)
+
+        response.headers['Location'] = (str(request.url_root) +
+                                        'api/v1/bucketlists/{}/items/{}'
+                                        .format(str(bucketlist_id), str(list_id)))
 
         return response, 201
 

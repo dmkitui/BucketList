@@ -442,5 +442,22 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 400)
         self.assertIn('Limit parameter can only be a positive integer', str(response2.data))
 
+    def test_bucketlist_pagination_headers(self):
+        """test pagination header's link parameter"""
+        # Add two bucketlists
+        self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(name='Learn Programming'))
+
+        self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(name='Travel the world'))
+
+        response = self.client().get('/api/v1/bucketlists/?limit=1',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('rel="next"', response.headers['Link'])
+
+
+
 if __name__ == '__main__':
     unittest.main()
