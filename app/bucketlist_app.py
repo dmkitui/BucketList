@@ -9,6 +9,10 @@ from instance import config
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from sqlalchemy import func
+from flasgger import Swagger
+from flasgger import swag_from
+
+
 
 # initialize sql-alchemy
 db = SQLAlchemy()
@@ -46,7 +50,6 @@ def verify_token(access_token):
     if not isinstance(user_id, str):
         g.user = User.get_user(user_id)
         return True
-
     else:
         return False
 
@@ -69,21 +72,31 @@ def decode_token(token):
 
 
 def create_app(config_name):
+    """Method to create an flask application, and allow access to the various endpoint routes"""
+    # Local imports
     from app.models import Bucketlists, BucketListItems
 
     app = FlaskAPI(__name__, instance_relative_config=True)
+    swagger = Swagger(app)
+
+    # Preload configurations from app_config object
     app.config.from_object(app_config[config_name])
+
+    # Override configuration above from a configuration file if it exists
     app.config.from_pyfile('config.py')
-    # Sqlachemy has signicant overheads and will be deprecated in future, hence disabled
+
+    # Sqlachemy has signicant overheads and will be deprecated in future, hence we disable.
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    with app.app_context():  # Bind the app to current context
-        db.create_all()  # create the tables
+    # Create database tables, if they dont exist and tie the db to the app context
+    with app.app_context():
+        db.create_all()
 
     @app.route('/api/v1/auth/register', methods=['POST'])
+    @swag_from('docs/register.yml')
     def auth_register():
-        """Route for creating a user"""
+        """Route for new users to register for the service"""
 
         data, error = UserSchema().load(request.data)
 
@@ -138,6 +151,7 @@ def create_app(config_name):
                any(digit in password for digit in digits)
 
     @app.route('/api/v1/auth/login', methods=['POST'])
+    @swag_from('docs/login.yml')
     def auth_login():
         """Route for Login"""
         try:
@@ -152,7 +166,7 @@ def create_app(config_name):
 
             if not user:
                 msg = 'User {} does not exist. Register to access the service'.format(user_email)
-                return custom_response(msg, 401)
+                return custom_response(msg, 404)
             else:
                 if user and user.password_validator(user_password):
                     access_token = user.generate_user_token(user.id)
@@ -172,6 +186,7 @@ def create_app(config_name):
             return custom_response(str(error), 500)
 
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
+    @swag_from('docs/bucketlists_get.yml')
     @multi_auth.login_required
     def bucketlists_all(page=1):
         """Route to create or get list of bucketlist items"""
@@ -261,7 +276,6 @@ def create_app(config_name):
             if link:
                 response.headers['Link'] = link
 
-
             return response, 200
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
@@ -319,8 +333,6 @@ def create_app(config_name):
         elif request.method == 'GET':
             # Global setting for use in bucketlist_data method for assigning bucketlist id
             g.get_type = 'one'
-            g.prev_page = None
-            g.next_page = None
             response = bucketlist_data([bucketlist])
 
             return response, 200
