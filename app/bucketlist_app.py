@@ -10,6 +10,8 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime
 from sqlalchemy import func
 
+
+
 # initialize sql-alchemy
 db = SQLAlchemy()
 
@@ -46,7 +48,6 @@ def verify_token(access_token):
     if not isinstance(user_id, str):
         g.user = User.get_user(user_id)
         return True
-
     else:
         return False
 
@@ -69,21 +70,29 @@ def decode_token(token):
 
 
 def create_app(config_name):
+    """Method to create an flask application, and allow access to the various endpoint routes"""
+    # Local imports
     from app.models import Bucketlists, BucketListItems
 
     app = FlaskAPI(__name__, instance_relative_config=True)
+
+    # Preload configurations from app_config object
     app.config.from_object(app_config[config_name])
+
+    # Override configuration above from a configuration file if it exists
     app.config.from_pyfile('config.py')
-    # Sqlachemy has signicant overheads and will be deprecated in future, hence disabled
+
+    # Sqlachemy has signicant overheads and will be deprecated in future, hence we disable.
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
 
-    with app.app_context():  # Bind the app to current context
-        db.create_all()  # create the tables
+    # Create database tables, if they dont exist and tie the db to the app context
+    with app.app_context():
+        db.create_all()
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def auth_register():
-        """Route for creating a user"""
+        """Route for new users to register for the service"""
 
         data, error = UserSchema().load(request.data)
 
@@ -140,36 +149,33 @@ def create_app(config_name):
     @app.route('/api/v1/auth/login', methods=['POST'])
     def auth_login():
         """Route for Login"""
-        try:
-            data, error = UserSchema(partial=('confirm_password',)).load(request.data)
-            if error:
-                return error, 400
+        data, error = UserSchema(partial=('confirm_password',)).load(request.data)
+        if error:
+            return error, 400
 
-            user_email = data['user_email']
-            user_password = data['user_password']
+        user_email = data['user_email']
+        user_password = data['user_password']
 
-            user = User.query.filter_by(user_email=user_email).first()
+        user = User.query.filter_by(user_email=user_email).first()
 
-            if not user:
-                msg = 'User {} does not exist. Register to access the service'.format(user_email)
-                return custom_response(msg, 401)
+        if not user:
+            msg = 'User {} does not exist. Register to access the service'.format(user_email)
+            return custom_response(msg, 401)
+        else:
+            if user and user.password_validator(user_password):
+                access_token = user.generate_user_token(user.id)
+                if access_token:
+                    response = jsonify({
+                        'message': 'Login successful',
+                        'access_token': access_token.decode(),
+                    })
+                    response.status_code = 200
+                    return response
+
             else:
-                if user and user.password_validator(user_password):
-                    access_token = user.generate_user_token(user.id)
-                    if access_token:
-                        response = jsonify({
-                            'message': 'Login successful',
-                            'access_token': access_token.decode(),
-                        })
-                        response.status_code = 200
-                        return response
+                msg = 'Incorrect email or password'
+                return custom_response(msg, 401)
 
-                else:
-                    msg = 'Incorrect email or password'
-                    return custom_response(msg, 401)
-        # To return any uncaught server errors
-        except Exception as error:
-            return custom_response(str(error), 500)
 
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
     @multi_auth.login_required
@@ -261,7 +267,6 @@ def create_app(config_name):
             if link:
                 response.headers['Link'] = link
 
-
             return response, 200
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
@@ -319,8 +324,6 @@ def create_app(config_name):
         elif request.method == 'GET':
             # Global setting for use in bucketlist_data method for assigning bucketlist id
             g.get_type = 'one'
-            g.prev_page = None
-            g.next_page = None
             response = bucketlist_data([bucketlist])
 
             return response, 200

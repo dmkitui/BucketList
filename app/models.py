@@ -4,7 +4,6 @@ from flask_bcrypt import Bcrypt
 import jwt
 from datetime import datetime, timedelta
 from instance import config
-from ago import human
 
 
 class User(db.Model):
