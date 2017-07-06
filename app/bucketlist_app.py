@@ -166,7 +166,7 @@ def create_app(config_name):
 
             if not user:
                 msg = 'User {} does not exist. Register to access the service'.format(user_email)
-                return custom_response(msg, 404)
+                return custom_response(msg, 401)
             else:
                 if user and user.password_validator(user_password):
                     access_token = user.generate_user_token(user.id)
