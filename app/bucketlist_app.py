@@ -28,6 +28,7 @@ from .models import User, UserSchema, BucketlistItemsSchema, BucketlistsSchema
 def verify_password(user_email, user_password):
     """
     Checks user provide password against its hash to confirm validity
+    :param user_email: user's email address
     :param user_password: User supplied password
     :return: True if provided password is valid against the hash
     """
@@ -56,7 +57,7 @@ def decode_token(token):
     """
     method to decode the access token during authorization
     :param token: User token from authorization header
-    :return: the decoded token
+    :return: the decoded user_id or error string
     """
     try:
         payload = jwt.decode(token, config.Config.SECRET, algorithm='HS256')
@@ -123,10 +124,7 @@ def create_app(config_name):
 
             new_user = User(user_email=user_email, user_password=user_password)
             new_user.save()
-
-            obj = User.query.filter_by(user_email=user_email).first()
-
-            response, error = UserSchema().dump(obj)
+            response, error = UserSchema().dump(new_user)
 
             if error:
                 return error, 500
@@ -176,12 +174,10 @@ def create_app(config_name):
                 msg = 'Incorrect email or password'
                 return custom_response(msg, 401)
 
-
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
     @multi_auth.login_required
     def bucketlists_all(page=1):
         """Route to create or get list of bucketlist items"""
-
         if request.method == 'POST':
             data, error = BucketlistsSchema(partial=('owner_id', 'id',)).load(request.data)
             if error:
@@ -230,7 +226,6 @@ def create_app(config_name):
             if q:
                 # Apply search
                 match = Bucketlists.query.filter(func.lower(Bucketlists.name).contains(q.lower()))
-
                 bucketlists = match.filter_by(owner_id=g.user.id).paginate(page, limit, False)
 
                 if not bucketlists.items:
@@ -244,6 +239,7 @@ def create_app(config_name):
                     return custom_response('No bucketlists available', 200)
 
             response = bucketlist_data(bucketlists.items)
+            # Link for the next, previous and last pages, if they exist
             link = ''
             if bucketlists.has_prev:
                 response.has_prev = True
@@ -271,8 +267,10 @@ def create_app(config_name):
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>', methods=['GET', 'PUT', 'DELETE'])
     @multi_auth.login_required
-    def bucketlist_manipulations(bucketlist_id, **kwargs):
-        """Route for operating on a specific bucketlist specified by the integer id argument"""
+    def bucketlist_manipulations(bucketlist_id):
+        """Route for operating on a specific bucketlist specified by the integer bucketlist_id 
+        argument
+        """
 
         if bucketlist_id < 1:
             msg = 'Bucketlist ID should be greater than or equal to 1'
@@ -331,7 +329,7 @@ def create_app(config_name):
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>/items/', methods=['POST'])
     @multi_auth.login_required
     def bucketlist_items(bucketlist_id):
-        """Route to add items to a bucketlist <bucketlist_id>"""
+        """Route to add items to a bucketlist with id bucketlist_id"""
 
         user_bucketlists = g.user.bucketlists
 
@@ -346,14 +344,14 @@ def create_app(config_name):
         if error:
             return error, 400
 
-        list_name = data['item_name']
+        item_name = data['item_name']
 
         if list(items):
             item_names = [item.item_name for item in items]
-            if list_name in item_names:
+            if item_name in item_names:
                 return custom_response('The item already in list', 409)
 
-        new_item = BucketListItems(item_name=list_name, bucketlist_id=bucketlist.id)
+        new_item = BucketListItems(item_name=item_name, bucketlist_id=bucketlist.id)
         new_item.save()
         bucketlist.date_modified = datetime.now()
         bucketlist.save()
@@ -447,6 +445,12 @@ def create_app(config_name):
 
             item.delete()
             return custom_response('Bucketlist item No {} deleted successfully'.format(item_id), 200)
+
+    # ----------------------------------------------------------------------------------------------
+
+    # HELPER METHODS
+
+    # ----------------------------------------------------------------------------------------------
 
     def custom_response(msg, status_code):
         """
