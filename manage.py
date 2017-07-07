@@ -11,7 +11,7 @@ migrate = Migrate(app, db)
 manager = Manager(app)
 
 
-# Define the migration command to always be preceded bt the word 'db'
+# Define the migration command to always be preceded by the word 'db'
 manager.add_command('db', MigrateCommand)
 
 # Testing command

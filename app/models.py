@@ -102,10 +102,6 @@ class BucketListItems(BucketlistBaseModel):
         self.item_name = item_name
         self.bucketlist_id = bucketlist_id
 
-    # @staticmethod
-    # def get_all(bucketlist_id):
-    #     """Method to return a bucketlist items specified by bucketlist_id"""
-    #     return BucketListItems.query.filter_by(bucketlist_id=bucketlist_id)
 
 
 class Bucketlists(BucketlistBaseModel):
@@ -120,10 +116,6 @@ class Bucketlists(BucketlistBaseModel):
         self.name = name
         self.owner_id = owner_id
 
-    # @staticmethod
-    # def get_all(owner_id):
-    #     """Method to get list of all bucketlist items"""
-    #     return Bucketlists.query.filter_by(owner_id=owner_id)
 
 
 class MarshmallowSchemaBase(Schema):
