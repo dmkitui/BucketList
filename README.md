@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/dmkitui/BucketList.svg?branch=develop)](https://travis-ci.org/dmkitui/BucketList)
-[![Coverage Status](https://coveralls.io/repos/github/dmkitui/BucketList/badge.svg?branch=ft-develop)](https://coveralls.io/github/dmkitui/BucketList?branch=ft-tests-147095419)
+[![Coverage Status](https://coveralls.io/repos/github/dmkitui/BucketList/badge.svg?branch=develop)](https://coveralls.io/github/dmkitui/BucketList?branch=develop)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/c444bb9b216c4c27b31602882cc93d98/badge.svg)](https://www.quantifiedcode.com/app/project/c444bb9b216c4c27b31602882cc93d98)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2d56324e6b624ab6a30da81c23cb7851)](https://www.codacy.com/app/dmkitui/BucketList?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dmkitui/BucketList&amp;utm_campaign=Badge_Grade)
 
@@ -62,11 +62,13 @@ written in. Sample JSON data is represented as a key:value dictionary as below
 
 ## Installation
 
-1. Clone the repo using the following command:
+1. Make sure you have Python version 3.3 or later installed.
+
+2. Clone the repo using the following command:
 
     `git clone https://github.com/dmkitui/BucketList.git`
     
-2. cd into the bucketlist directory and prepare a Python 3 virtual environment with the following 
+3. cd into the bucketlist directory and prepare a Python 3 virtual environment with the following 
 steps:
 
     `$ virtualenv venv`
@@ -75,18 +77,18 @@ steps:
 
         `$ source venv/bin/activate`
 
-3. Run the following commands to install all the modules required for this application to run:
+4. Run the following commands to install all the modules required for this application to run:
 
     `$ pip install -r requirements.txt`
      
-4. The following commands will create the databases
+5. The following commands will create the databases
 
     Development database    `$ createdb bucketlist_api`
     
     Tests database    `$ createdb test_db`
 
 
-5. The following commands will initialize and setup the database tables:
+6. The following commands will initialize and setup the database tables:
     
     `$ python manage.py db init`
 
@@ -94,7 +96,7 @@ steps:
 
     `$ python manage.py db upgrade`
 
-6. Setup the environment variables with the following commands:
+7. Setup the environment variables with the following commands:
 
     `$ export FLASK_APP="run.py"`
     
@@ -104,7 +106,7 @@ steps:
     
     `$ export DATABASE_URL="postgresql://localhost/bucketlist_api"`
     
-7. To start the server, run the following command:
+8. To start the server, run the following command:
 
     `flask run`
     
