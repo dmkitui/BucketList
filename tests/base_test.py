@@ -1,12 +1,10 @@
 import unittest
 import json
-# from app.models import User, BucketListItems, Bucketlists
-
-# from app.main_app import create_app, db
 from app import bucketlist_app
 
 db = bucketlist_app.db
 User = bucketlist_app.User
+
 
 
 class BaseTestCase(unittest.TestCase):
@@ -68,6 +66,8 @@ class BaseBucketListCase(BaseTestCase):
     '''Tests configuration for bucketlist tests'''
 
     def setUp(self):
+        from app import models
+
         self.app = bucketlist_app.create_app(config_name='testing')
         self.client = self.app.test_client
 
@@ -84,16 +84,20 @@ class BaseBucketListCase(BaseTestCase):
         # Get the token
         self.token = response['access_token']
 
-        # # Create a bucketlist
-        # response = self.client().post('/api/v1/bucketlists/',
-        #                               headers=dict(Authorization="Bearer " + token),
-        #                               data=dict(name='Learn Programming'))
-        #
-        # # Create a bucketlist item
+        # Create bucktelist
+        bucketlist1 = models.Bucketlists(name='Travel the world', owner_id=0)
+        bucketlist1.save()
 
+        bucketlist2 = models.Bucketlists(name='Learn Programming', owner_id=0)
+        bucketlist2.save()
 
+        # Create bucketlist items
+        bucketlist_item1 = models.BucketListItems(item_name='Visit Honduras', bucketlist_id=0)
+        bucketlist_item1.save()
 
-
+        bucketlist_item2 = models.BucketListItems(item_name='Introduction to Python',
+                                                 bucketlist_id=0)
+        bucketlist_item2.save()
 
 
     def tearDown(self):
