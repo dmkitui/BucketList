@@ -176,7 +176,7 @@ def create_app(config_name):
 
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
     @multi_auth.login_required
-    def bucketlists_all(page=1):
+    def bucketlists_all():
         """Route to create or get list of bucketlist items"""
         if request.method == 'POST':
             data, error = BucketlistsSchema(partial=('owner_id', 'id',)).load(request.data)
@@ -209,6 +209,7 @@ def create_app(config_name):
         elif request.method == 'GET':
             q = request.args.get('q', type=str)
             limit = request.args.get('limit', default=20, type=None)
+            page = request.args.get('page', default=1, type=int)
             if q == '':
                 return custom_response('Query parameter cannot be empty', 400)
 
@@ -220,8 +221,14 @@ def create_app(config_name):
             if not (0 < limit < 101):
                 return custom_response('Invalid limit value. Valid values are 1-100', 400)
 
+            try:
+                page = int(page)
+            except ValueError:
+                return custom_response('Invalid page value can only be a positive integer.', 400)
+
             # global setting for use in bucketlist_data method for setting returned bucketlist id
             g.get_type = 'many'
+            g.page = page
 
             if q:
                 # Apply search
@@ -231,14 +238,25 @@ def create_app(config_name):
                 if not bucketlists.items:
                     return custom_response('No bucketlists with provided search parameter', 404)
 
+                if bucketlists.pages < page:
+                    return custom_response('Page requested for does not exist.', 404)
+
+                g.total_pages = bucketlists.pages
+
             else:
                 bucketlists = Bucketlists.query.filter_by(owner_id=g.user.id).paginate(page,
                                                                                        limit,
                                                                                        False)
+                if bucketlists.pages < page:
+                    return custom_response('Page requested for does not exist.', 404)
+
                 if not bucketlists.items:
                     return custom_response('No bucketlists available', 200)
 
+                g.total_pages = bucketlists.pages
+
             response = bucketlist_data(bucketlists.items)
+
             # Link for the next, previous and last pages, if they exist
             link = ''
             if bucketlists.has_prev:
@@ -262,6 +280,7 @@ def create_app(config_name):
 
             if link:
                 response.headers['Link'] = link
+
 
             return response, 200
 
@@ -491,6 +510,8 @@ def create_app(config_name):
                 current_id = g.bucketlist_id
             bucketlist_obj.update({'id': current_id, 'items': items_data})
             bucketlists_details.append(bucketlist_obj)
+
+        bucketlists_details.append({'current_page': str(g.page), 'total_pages': str(g.total_pages)})
 
         return jsonify(bucketlists_details)
 
