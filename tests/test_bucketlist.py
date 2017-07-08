@@ -57,6 +57,10 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
     def test_get_non_existent_bucketlist(self):
         """test get for a non-existent-bucketlist"""
 
+        response1 = self.client().get('/api/v1/bucketlists/0',
+                                      headers=dict(Authorization="Bearer " + self.token))
+        self.assertIn('Bucketlist ID should be greater than or equal to 1', str(response1.data))
+
         response2 = self.client().get('/api/v1/bucketlists/101',
                                       headers=dict(Authorization="Bearer " + self.token))
 
@@ -90,12 +94,17 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
     def test_edit_existing_bucketlist(self):
         """Test edit an existing bucketlist"""
 
-        response2 = self.client().put('/api/v1/bucketlists/1',
+        response1 = self.client().put('/api/v1/bucketlists/1',
                                       headers=dict(Authorization="Bearer " + self.token),
                                       data=dict(name='Learn Good Programming Skills'))
 
-        self.assertTrue(response2.status_code == 200)
-        self.assertIn('Bucketlist updated', str(response2.data))
+        self.assertTrue(response1.status_code == 200)
+        self.assertIn('Bucketlist updated', str(response1.data))
+
+        response2 = self.client().put('/api/v1/bucketlists/1',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
+        self.assertEqual(response2.status_code, 400)
 
     def test_edit_nonexistent_bucketlist(self):
         """Test edit a bucketlist that does not exist"""
@@ -182,12 +191,12 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
     def test_edit_bucketlist_items_status(self):
         """Test it can edit a bucketlist item's done status"""
 
-        response4 = self.client().put('/api/v1/bucketlists/1/items/1',
+        response1 = self.client().put('/api/v1/bucketlists/1/items/1',
                                       headers=dict(Authorization="Bearer " + self.token),
                                       data=dict(done=True))
-        data = json.loads(response4.data.decode())
+        data = json.loads(response1.data.decode())
 
-        self.assertEqual(response4.status_code, 201)
+        self.assertEqual(response1.status_code, 201)
         self.assertEqual(data['done'], True)
         self.assertIn('Item 1 successfully updated', data['message'])
 
@@ -212,6 +221,16 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         data = json.loads(response3.data.decode())
         self.assertEqual(response3.status_code, 404)
         self.assertEqual('That bucketlist does not exist', data['message'])
+
+    def test_add_item_to_bucketlists(self):
+        """Test add items to bucketlist"""
+
+        response = self.client().post('/api/v1/bucketlists/2/items/',
+                                      headers=dict(Authorization="Bearer " + self.token))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('Item name not provided', str(response.data))
+        # Add the same bucketlist item again
 
     def test_add_item_that_already_exists(self):
         """Test it cannot add item to when it already exists"""
@@ -303,6 +322,21 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         self.assertEqual(response2.status_code, 400)
         self.assertIn('Limit parameter can only be a positive integer', str(response2.data))
+
+        # Add two more bucketlist items to demo page parameter
+
+        self.client().post('/api/v1/bucketlists/1/items/',
+                           headers=dict(Authorization="Bearer " + self.token),
+                           data=dict(item_name='Intro to Anular JS'))
+
+        self.client().post('/api/v1/bucketlists/1/items/',
+                           headers=dict(Authorization="Bearer " + self.token),
+                           data=dict(item_name='Intro to Django'))
+
+        response2 = self.client().get('/api/v1/bucketlists/?limit=1&page=2',
+                                      headers=dict(Authorization="Bearer " + self.token))
+        self.assertIn('rel="prev"', response2.headers['Link'])
+
 
     def test_bucketlist_pagination_headers(self):
         """test pagination header's link parameter"""

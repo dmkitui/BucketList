@@ -84,7 +84,8 @@ class BaseBucketListCase(BaseTestCase):
         self.token = response['access_token']
 
         # Create first bucketlist
-        response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
+        response1 = self.client().post('/api/v1/bucketlists/',
+                                       headers=dict(Authorization="Bearer " + self.token),
                                        data=dict(name='Learn Programming'))
 
         data = json.loads(response1.data.decode())
