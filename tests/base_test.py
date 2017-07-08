@@ -6,7 +6,6 @@ db = bucketlist_app.db
 User = bucketlist_app.User
 
 
-
 class BaseTestCase(unittest.TestCase):
     '''Base test case configuration'''
 
@@ -49,7 +48,6 @@ class BaseTestCase(unittest.TestCase):
 
         return json.loads(response.data.decode()), response.status_code
 
-
     def user_logout(self):
         '''
         Helper method to logout a user
@@ -61,6 +59,7 @@ class BaseTestCase(unittest.TestCase):
         with self.app.app_context():  # Bind the app to current context
             db.session.close()
             db.drop_all()
+
 
 class BaseBucketListCase(BaseTestCase):
     '''Tests configuration for bucketlist tests'''
@@ -76,29 +75,41 @@ class BaseBucketListCase(BaseTestCase):
             db.drop_all()
             db.create_all()  # create the tables
 
-        # Register a user
+        # Register a default user
         self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
 
-        # Login the user
+        # Login the default user
         response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
         # Get the token
         self.token = response['access_token']
 
-        # Create bucktelist
-        bucketlist1 = models.Bucketlists(name='Travel the world', owner_id=0)
-        bucketlist1.save()
+        # Create first bucketlist
+        response1 = self.client().post('/api/v1/bucketlists/', headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(name='Learn Programming'))
 
-        bucketlist2 = models.Bucketlists(name='Learn Programming', owner_id=0)
-        bucketlist2.save()
+        data = json.loads(response1.data.decode())
+        bucketlist_id = data['id']
 
-        # Create bucketlist items
-        bucketlist_item1 = models.BucketListItems(item_name='Visit Honduras', bucketlist_id=0)
-        bucketlist_item1.save()
+        # Add item
+        response2 = self.client().post('/api/v1/bucketlists/{}/items/'.format(bucketlist_id),
+                                      headers=dict(Authorization="Bearer " + self.token),
+                                      data=dict(item_name='Intro to Python'))
 
-        bucketlist_item2 = models.BucketListItems(item_name='Introduction to Python',
-                                                 bucketlist_id=0)
-        bucketlist_item2.save()
+        data = json.loads(response2.data.decode())
+        item_id = data['id']
 
+        # Create second bucketlist
+        response3 = self.client().post('/api/v1/bucketlists/',
+                                       headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(name='Travel the world'))
+
+        data2 = json.loads(response3.data.decode())
+        bucketlist_id2 = data2['id']
+
+        # Add item
+        self.client().post('/api/v1/bucketlists/{}/items/'.format(bucketlist_id2),
+                                       headers=dict(Authorization="Bearer " + self.token),
+                                       data=dict(item_name='Visit Honduras'))
 
     def tearDown(self):
         with self.app.app_context():  # Bind the app to current context
