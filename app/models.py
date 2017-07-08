@@ -31,7 +31,8 @@ class User(db.Model):
         return Bcrypt().check_password_hash(self.user_password, user_password)
 
     def save(self):
-        """Creates and saves user to the db, or edits and saves changes to existing an existing one"""
+        """Creates and saves user to the db, or edits and saves changes to existing an existing 
+        one"""
         db.session.add(self)
         db.session.commit()
 
@@ -103,7 +104,6 @@ class BucketListItems(BucketlistBaseModel):
         self.bucketlist_id = bucketlist_id
 
 
-
 class Bucketlists(BucketlistBaseModel):
     """Class for Bucketlist data"""
     __tablename__ = 'bucketlists'
@@ -115,7 +115,6 @@ class Bucketlists(BucketlistBaseModel):
     def __init__(self, name, owner_id):
         self.name = name
         self.owner_id = owner_id
-
 
 
 class MarshmallowSchemaBase(Schema):

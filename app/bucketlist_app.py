@@ -125,10 +125,6 @@ def create_app(config_name):
             new_user = User(user_email=user_email, user_password=user_password)
             new_user.save()
             response, error = UserSchema().dump(new_user)
-
-            if error:
-                return error, 500
-
             response.update({'message':'Registration successful, welcome to Bucketlist'})
 
             return response, 201
@@ -209,6 +205,8 @@ def create_app(config_name):
         elif request.method == 'GET':
             q = request.args.get('q', type=str)
             limit = request.args.get('limit', default=20, type=None)
+            page = request.args.get('page', default=1, type=int)
+            
             if q == '':
                 return custom_response('Query parameter cannot be empty', 400)
 
@@ -237,6 +235,9 @@ def create_app(config_name):
                                                                                        False)
                 if not bucketlists.items:
                     return custom_response('No bucketlists available', 200)
+
+            g.page = page
+            g.total_pages = bucketlists.pages
 
             response = bucketlist_data(bucketlists.items)
             # Link for the next, previous and last pages, if they exist
@@ -314,9 +315,6 @@ def create_app(config_name):
             response, error = BucketlistsSchema().dump(bucketlist)
             response.update({'message': 'Bucketlist updated', 'id': bucketlist_id})
 
-            if error:
-                return error, 500
-
             return response, 200
 
         elif request.method == 'GET':
@@ -357,8 +355,6 @@ def create_app(config_name):
         bucketlist.save()
 
         output, error = BucketlistItemsSchema().dump(new_item)
-        if error:
-            return error, 500
 
         list_id = len(list(items)) + 1
         output.update({'id': list_id, 'bucketlist_id': bucketlist_id})
@@ -433,9 +429,6 @@ def create_app(config_name):
 
             response, error = BucketlistItemsSchema().dump(item)
 
-            if error:
-                return error, 500
-
             response['message'] = '{}. Item {} successfully updated'.format(msg, item_id)
             response.update({'id': bucketlist_id})
 
@@ -491,6 +484,9 @@ def create_app(config_name):
                 current_id = g.bucketlist_id
             bucketlist_obj.update({'id': current_id, 'items': items_data})
             bucketlists_details.append(bucketlist_obj)
+
+            if g.get_type == 'many':
+                bucketlists_details.append({'current_page': g.page, 'total_pages': g.total_pages})
 
         return jsonify(bucketlists_details)
 
