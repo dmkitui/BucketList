@@ -125,10 +125,6 @@ def create_app(config_name):
             new_user = User(user_email=user_email, user_password=user_password)
             new_user.save()
             response, error = UserSchema().dump(new_user)
-
-            if error:
-                return error, 500
-
             response.update({'message':'Registration successful, welcome to Bucketlist'})
 
             return response, 201
@@ -319,9 +315,6 @@ def create_app(config_name):
             response, error = BucketlistsSchema().dump(bucketlist)
             response.update({'message': 'Bucketlist updated', 'id': bucketlist_id})
 
-            if error:
-                return error, 500
-
             return response, 200
 
         elif request.method == 'GET':
@@ -362,8 +355,6 @@ def create_app(config_name):
         bucketlist.save()
 
         output, error = BucketlistItemsSchema().dump(new_item)
-        if error:
-            return error, 500
 
         list_id = len(list(items)) + 1
         output.update({'id': list_id, 'bucketlist_id': bucketlist_id})
@@ -437,9 +428,6 @@ def create_app(config_name):
             bucketlist.save()
 
             response, error = BucketlistItemsSchema().dump(item)
-
-            if error:
-                return error, 500
 
             response['message'] = '{}. Item {} successfully updated'.format(msg, item_id)
             response.update({'id': bucketlist_id})
