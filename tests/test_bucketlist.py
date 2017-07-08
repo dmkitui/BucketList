@@ -54,7 +54,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Integers only not allowed for the names field', str(response2.data))
         self.assertEqual(response2.status_code, 400)
 
-
     def test_get_non_existent_bucketlist(self):
         """test get for a non-existent-bucketlist"""
 
@@ -98,7 +97,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertTrue(response2.status_code == 200)
         self.assertIn('Bucketlist updated', str(response2.data))
 
-
     def test_edit_nonexistent_bucketlist(self):
         """Test edit a bucketlist that does not exist"""
 
@@ -131,7 +129,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         self.assertEqual(response2.status_code, 409)
         self.assertIn('Bucketlist name with specified name already exists', str(response2.data))
-
 
     def test_get_bucketlist_items(self):
         """Tests it can get all bucketlist items"""
@@ -194,7 +191,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(data['done'], True)
         self.assertIn('Item 1 successfully updated', data['message'])
 
-
     def test_edit_none_existent_bucketlist_item(self):
         """Test it can edit a bucketlist item that does not exist"""
 
@@ -244,7 +240,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response4.status_code, 409)
         self.assertIn('No update made', data['message'])
 
-
     def test_delete_bucketlist_item(self):
         """Test it can delete a bucketlist item"""
 
@@ -268,7 +263,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         self.assertEqual('That bucketlist does not exist', data['message'])
 
-
     def test_bucketlist_search_not_found(self):
         """Test bucketlist search by name no results"""
 
@@ -277,7 +271,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         self.assertEqual(response2.status_code, 404)
         self.assertIn('No bucketlists with provided search parameter', str(response2.data))
-
 
     def test_bucketlist_search_no_search_parameter(self):
         """Test bucketlist search when no parameter given"""
@@ -288,7 +281,6 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 400)
         self.assertIn('Query parameter cannot be empty', str(response2.data))
 
-
     def test_search_success(self):
         """test search functionality, success"""
 
@@ -298,11 +290,10 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertEqual(response2.status_code, 200)
         self.assertIn('Learn Programming', str(response2.data))
 
-
     def test_bucketlist_pagination(self):
         """Test the page limit restrictions"""
         response = self.client().get('/api/v1/bucketlists/?limit=101',
-                                      headers=dict(Authorization="Bearer " + self.token))
+                                     headers=dict(Authorization="Bearer " + self.token))
 
         self.assertEqual(response.status_code, 400)
         self.assertIn('Invalid limit value. Valid values are 1-100', str(response.data))
@@ -317,7 +308,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         """test pagination header's link parameter"""
 
         response = self.client().get('/api/v1/bucketlists/?limit=1',
-                                      headers=dict(Authorization="Bearer " + self.token))
+                                     headers=dict(Authorization="Bearer " + self.token))
 
         self.assertEqual(response.status_code, 200)
         self.assertIn('rel="next"', response.headers['Link'])
