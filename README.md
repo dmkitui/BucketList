@@ -114,19 +114,186 @@ steps:
     
     `http://127.0.0.1:5000/`
     
-    Use [Postman](https://www.getpostman.com/) to test out the various endpoint functionalities 
+    Use [Postman](https://www.getpostman.com/) to test out the various endpoint functionality 
     of this application.
     
     
+CODE STYLE?
 
 ## Usage
 ### Endpoints
 
-TODO: Write usage instructions
+Endpoint | Functionality| Public Access
+------------ | :------------- | :-------------
 
-## Screenshots
+POST api/v1/bucketlist/auth/register | Registers a user | TRUE
 
-TODO: Include screenshots of the application.
+POST api/v1/bucketlist/auth/login |Logs a user in | TRUE
+
+POST api/v1/bucketlist/ | Creates a new bucket list | FALSE
+
+GET api/v1/bucketlist/ | Lists all created bucket lists | FALSE
+
+GET api/v1/bucketlist/bucketlist_id | Gets a single bucket list with the id bucketlist_id | FALSE
+
+PUT api/v1/bucketlist/bucketlist_id | Updates bucket list with the bucketlist_id | FALSE
+
+DELETE api/v1/bucketlist/bucketlist_id | Deletes bucket list with the id bucketlist_id | FALSE
+
+POST api/v1/bucketlist/bucketlist_id/items/ | Creates a new item in bucket list with id bucketlist_id | FALSE
+
+PUT api/v1/bucketlist/bucketlist_id/items/item_id | Updates a bucket list item | FALSE
+
+DELETE api/v1/bucketlists/bucketlist_id/items/item_id | Deletes an item in a bucket list | FALSE
+
+
+#### User Registration
+
+For a user to successfully register, a POST json with the following details is requiered:
+
+**user_email** : User's valid email address. Invalid email addresses shall be rejected with an 
+error message.
+**user_password**: User's  password which must be at least 8 characters long, contain an upper case 
+letter and a digit.
+**confirm_password**: The user's password entered again.
+
+Any error with the above required fields will result in an error message as shown below:
+
+
+On successful registration, the response will be as in the screenshot below:
+
+
+#### User Login
+
+A registered user can login into the service at this endpoint 
+
+`bucketlist/app/v1/bucketlists/`
+
+Required fields are user_email and user_password
+
+An unregistered user trying to log in will recieve the following message:
+
+On successful login, the user will see the message below:
+
+The **access_token** will be used in subsequent bucketlist endpoints to authenticate the user.
+
+##### Authorization header field
+
+This is field in the request header in the form
+
+`Authorization : Bearer + access token`
+eg:
+`Authorization : Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0OTk2NjM2MzIsImlhdCI6MTQ5OTY2MDYzMiwic3ViIjoxMX0.c9fzEpjf8y-iImPZGyxpQQwaVCha7ULf-LWxaZDH-S4`
+
+
+#### GET bucketlists
+`GET api/v1/bucketlist/`
+
+After logging in, a user can use this endpoint to access all their bucketlists.
+
+The response fields are:
+ 1. `owner_id`: Id of the user
+ 2.  `name`: Name of the bucketlist
+ 3. `id`: Bucketlist ID.
+ 4. `date_created` and `date_modified`: Date and time the bucketlist was created and modified 
+ respectively.
+ 5. `current_page` and `total_pages`: The current page and number of total pages. 
+ 
+ ##### Search
+
+A user can perform a search on bucketlists by including the search parameter q at this endpoint.
+
+eg: `GET api/v1/bucketlist/?q=nairobi`
+
+The above will result in all bucketlists with __nairobi__ in their names to be returned. The 
+search is case insensitive. When there is no match, the returned response shall indicate so.
+
+#### Pagination
+
+By default, the GET operation will return 20 items per page. The user can however specify the 
+pagination by using a __limit__ parameter eg:
+    `GET api/v1/bucketlist/?limit=10`
+    
+Will return 10 items per page, and response will include __current_page__ and __total_page__ 
+dictionary.
+
+
+ 
+#### POST a bucketlist
+`POST api/v1/bucketlist/`
+
+The required fields for a user to post a bucketlist are:
+
+**name**: Bucketlist name, eg Travel the world
+**Authorization Header**: This is a header field in the form
+
+`Authorization : Bearer + access token`
+eg:
+`Authorization : Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0OTk2NjM2MzIsImlhdCI6MTQ5OTY2MDYzMiwic3ViIjoxMX0.c9fzEpjf8y-iImPZGyxpQQwaVCha7ULf-LWxaZDH-S4`
+
+A successful POST will give the following message:
+
+#### Fetch a particular bucketlist
+
+`GET api/v1/bucketlist/bucketlist_id`
+
+Used to get a bucketlist with id __bucketlist_id__
+
+This will return a response with details of the specified bucketlist id.
+
+
+#### Edit a particular bucketlist
+
+`PUT api/v1/bucketlist/bucketlist_id`
+
+Used to edit the name of  bucketlist of the given ID.
+ 
+On successful edit, the message is as below:
+
+#### Delete a particular bucketlist
+
+`DELETE api/v1/bucketlist/bucketlist_id`
+
+Used to delete a bucketlist with id bucketlist_id
+
+
+
+#### Add items to bucketlist
+
+`POST api/v1/bucketlist/bucketlist_id/items/`
+
+Used to add item to bucketlist with id __bucketlist_id__
+
+Reuired json body fields are:
+
+1. **item_name**: The items name, eg *Visit Hawai*
+
+If the item nameis missing, the response message will  specify the error.
+
+The json response fields are:
+
+1. `bucketlist_id`: The id of the bucketlist
+2. `done`: Status of the list item. True if the item has been completed, otherwise false.
+3. `id`: The ID of the list item.
+4. `date_created` and `date_modified`: Date and time of creation, and modification.
+
+#### Edit item in bucketlist
+
+`PUT api/v1/bucketlist/bucketlist_id/items/item_id`
+
+Used to edit an item with __item_id__ of bucketlist with id __bucketlist_id__.
+
+The required fields can be either:
+
+1. `item_name`: To edit the name of the item
+2. `done`: __True__ or __False__ To edit status of the item.
+
+#### Delete item in bucketlist
+
+`DELETE api/v1/bucketlist/bucketlist_id/items/item_id`
+
+Used to delete an item with __item_id__ of bucketlist with id __bucketlist_id__.
+
 
 ## Contributing
 
@@ -134,16 +301,31 @@ Fork it!
 Create your feature branch: git checkout -b my-new-feature
 Commit your changes: git commit -am 'Add some feature'
 Push to the branch: git push origin my-new-feature
-Submit a pull request :D
-
-## History
-
-TODO: Write history
+Submit a pull request
 
 ## Credits
 
-TODO: Write credits
+[Roger Taracha](https://github.com/TheDancerCodes) : For the inspiration and encouragement.
+
+[Andela Community](https://www.andela.com/) : For the opportunity to become a tech-leader.
 
 ## License
 
-TODO: Write license
+The MIT License (MIT)
+
+Copyright (c) 2017 [DANIEL KITUI]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction, 
+including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is 
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or 
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+ NON-INFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
