@@ -60,23 +60,8 @@ written in. Sample JSON data is represented as a key:value dictionary as below
 
 
 ### CODE STYLE
-This project is coded with adherence to [pep8](https://www.python.org/dev/peps/pep-0008/) except 
-for line length which is set at 100 characters for this project.
-
-### AUTOMATED TESTING
-
-To run automated testing:
-
-* While in the project directory, run the following command:
-    `python manage.py tests`
-    
-* To find out coverage information, run:
-    `coverage report -m`
-    
-    The `-m` flag is used to show any missed lines.
-    
-    
-
+This project complies with [pep8](https://www.python.org/dev/peps/pep-0008/) except 
+for line length which is set at 100 characters.
 
 ## Installation
 
@@ -135,32 +120,35 @@ steps:
     Use [Postman](https://www.getpostman.com/) to test out the various endpoint functionality 
     of this application.
 
+### Automated End-To-End testing
+
+To run automated testing:
+
+* While in the project directory, run the following command:
+
+    `python manage.py tests`
+    
+* To find out coverage information, run:
+
+    `coverage report -m`
+    
+    The `-m` flag is used to show any missed lines.
+    
 ## Usage
 ### Endpoints
 
-Endpoint | Functionality| Public Access
------------- | ------------- | -------------
-
-POST api/v1/bucketlist/auth/register | Registers a user | TRUE
-
-POST api/v1/bucketlist/auth/login | Logs a user in | TRUE
-
-POST api/v1/bucketlist/ | Creates a new bucket list | FALSE
-
-GET api/v1/bucketlist/ | Lists all created bucket lists | FALSE
-
-GET api/v1/bucketlist/bucketlist_id | Gets a single bucket list with the id bucketlist_id | FALSE
-
-PUT api/v1/bucketlist/bucketlist_id | Updates bucket list with the bucketlist_id | FALSE
-
-DELETE api/v1/bucketlist/bucketlist_id | Deletes bucket list with the id bucketlist_id | FALSE
-
-POST api/v1/bucketlist/bucketlist_id/items/ | Creates a new item in bucket list with id bucketlist_id | FALSE
-
-PUT api/v1/bucketlist/bucketlist_id/items/item_id | Updates a bucket list item | FALSE
-
-DELETE api/v1/bucketlists/bucketlist_id/items/item_id | Deletes an item in a bucket list | FALSE
-
+|Method | Endpoint | Usage |
+| ---- | ---- | --------------- |
+|POST| `/api/v1/auth/register` |  Register a user. |
+|POST| `/api/v1/auth/login` | Login user.|
+|POST| `/api/v1/bucketlists/` | Create a new bucket list. |
+|GET| `/api/v1/bucketlists/` | Retrieve all the created bucket lists. |
+|GET| `/api/v1/bucketlists/<bucket_id>` | Get a single bucket list. |
+|PUT| `/api/v1/bucketlists/<bucket_id>` | Update a single bucket list. |
+|DELETE| `/api/v1/bucketlists/<bucket_id>` | Delete single bucket list. |
+|POST| `/api/v1/bucketlists/<bucket_id>/items` | Add a new item to this bucket list. |
+|PUT|`/api/v1/bucketlists/<bucket_id>/items/<item_id>` | Update this bucket list. |
+|DELETE|`/api/v1/bucketlists/<bucket_id>/items/<item_id>` | Delete this single bucket list. |
 
 ### 1. User Registration
 
