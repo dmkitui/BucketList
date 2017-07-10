@@ -126,11 +126,11 @@ steps:
 ### Endpoints
 
 Endpoint | Functionality| Public Access
------------- | :------------- | :-------------
+------------ | ------------- | -------------
 
-| POST api/v1/bucketlist/auth/register | Registers a user | TRUE |
+POST api/v1/bucketlist/auth/register | Registers a user | TRUE
 
-POST api/v1/bucketlist/auth/login |Logs a user in | TRUE
+POST api/v1/bucketlist/auth/login | Logs a user in | TRUE
 
 POST api/v1/bucketlist/ | Creates a new bucket list | FALSE
 
@@ -161,8 +161,16 @@ letter and a digit.
 
 Any error with the above required fields will result in an error message as shown below:
 
+![alt text](screenshots/reg_errors_password.png "Registration success")
+
+![alt text](screenshots/reg_errors_cofirmationpwd.png "Registration Failure")
+
+![alt text](screenshots/reg_errors_pwd_not_match.png "Registration Failure")
+
 
 On successful registration, the response will be as in the screenshot below:
+
+![alt text](screenshots/reg_success.png "Registration success")
 
 
 ### 2. User Login
@@ -184,7 +192,8 @@ The **access_token** will be used in subsequent bucketlist endpoints to authenti
 This is field in the request header in the form
 
 `Authorization : Bearer + access token`
-eg:
+
+For example:
 `Authorization : Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0OTk2NjM2MzIsImlhdCI6MTQ5OTY2MDYzMiwic3ViIjoxMX0.c9fzEpjf8y-iImPZGyxpQQwaVCha7ULf-LWxaZDH-S4`
 
 
