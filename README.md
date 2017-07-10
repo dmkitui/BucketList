@@ -161,16 +161,16 @@ letter and a digit.
 
 Any error with the above required fields will result in an error message as shown below:
 
-![alt text](screenshots/reg_errors_password.png "Registration success")
+![Password error](screenshots/reg_errors_password.png "Registration Failure")
 
-![alt text](screenshots/reg_errors_cofirmationpwd.png "Registration Failure")
+![Confirmation password error](screenshots/reg_errors_confirmationpwd.png "Registration Failure")
 
-![alt text](screenshots/reg_errors_pwd_not_match.png "Registration Failure")
+![Passwords do not match](screenshots/reg_errors_pwd_not_match.png "Registration Failure")
 
 
 On successful registration, the response will be as in the screenshot below:
 
-![alt text](screenshots/reg_success.png "Registration success")
+![Registration success](screenshots/reg_success.png "Registration success")
 
 
 ### 2. User Login
@@ -184,6 +184,8 @@ Required fields are user_email and user_password
 An unregistered user trying to log in will recieve the following message:
 
 On successful login, the user will see the message below:
+
+![Login success](screenshots/login_success.png "Login success")
 
 The **access_token** will be used in subsequent bucketlist endpoints to authenticate the user.
 
@@ -210,6 +212,9 @@ The response fields are:
  respectively.
  5. `current_page` and `total_pages`: The current page and number of total pages. 
  
+ 
+ ![GET success](screenshots/get_bucketlist.png "Get success")
+ 
 #### Search
 
 A user can perform a search on bucketlists by including the search parameter q at this endpoint.
@@ -218,6 +223,8 @@ eg: `GET api/v1/bucketlist/?q=nairobi`
 
 The above will result in all bucketlists with __nairobi__ in their names to be returned. The 
 search is case insensitive. When there is no match, the returned response shall indicate so.
+
+![search success](screenshots/search_fail.png "Search fail")
 
 #### Pagination
 
@@ -239,6 +246,8 @@ The required fields for a user to post a bucketlist are:
 
 A successful POST will give the following message:
 
+![POST success](screenshots/add_bucketlist.png "Add bucketlist")
+
 ### 5. Fetch a particular bucketlist
 
 `GET api/v1/bucketlist/bucketlist_id`
@@ -246,6 +255,8 @@ A successful POST will give the following message:
 Used to get a bucketlist with id __bucketlist_id__
 
 This will return a response with details of the specified bucketlist id.
+
+![Get a bucketlist](screenshots/get_bucketlist.png "")
 
 
 ### 6. Edit a particular bucketlist
@@ -256,11 +267,16 @@ Used to edit the name of  bucketlist of the given ID.
  
 On successful edit, the message is as below:
 
+![Edit bucketlist](screenshots/edit_bucketlist.png "Edit")
+
+
 ### 7. Delete a particular bucketlist
 
 `DELETE api/v1/bucketlist/bucketlist_id`
 
 Used to delete a bucketlist with id bucketlist_id
+
+![Delete Bucketlist](screenshots/delete_bucketlist.png "Delete")
 
 
 
@@ -283,6 +299,9 @@ The json response fields are:
 3. `id`: The ID of the list item.
 4. `date_created` and `date_modified`: Date and time of creation, and modification.
 
+![Add Items](screenshots/add_item.png "Add item")
+
+
 ### 9. Edit item in bucketlist
 
 `PUT api/v1/bucketlist/bucketlist_id/items/item_id`
@@ -294,11 +313,19 @@ The required fields can be either:
 1. `item_name`: To edit the name of the item
 2. `done`: __True__ or __False__ To edit status of the item.
 
+![Edit Item](screenshots/update_item_name.png "Update name")
+![Edit Item status](screenshots/update_item_status.png "Update status")
+
+
+
 ### 10. Delete item in bucketlist
 
 `DELETE api/v1/bucketlist/bucketlist_id/items/item_id`
 
 Used to delete an item with __item_id__ of bucketlist with id __bucketlist_id__.
+
+![Delete Item](screenshots/delete_item.png "Delete Item")
+
 
 
 ## Contributing
