@@ -2,12 +2,13 @@
 [![Coverage Status](https://coveralls.io/repos/github/dmkitui/BucketList/badge.svg?branch=develop)](https://coveralls.io/github/dmkitui/BucketList?branch=develop)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/c444bb9b216c4c27b31602882cc93d98/badge.svg)](https://www.quantifiedcode.com/app/project/c444bb9b216c4c27b31602882cc93d98)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2d56324e6b624ab6a30da81c23cb7851)](https://www.codacy.com/app/dmkitui/BucketList?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dmkitui/BucketList&amp;utm_campaign=Badge_Grade)
+[![pep 8](https://img.shields.io/badge/code%20style-Pep%208-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 
 ## BUCKET LIST API APPLICATION
 
 According to Merriam-Webster Dictionary, a Bucket List is a list of things that one has not done 
 before but wants to do before dying. This project aims at implementing an API for an online Bucket 
-list service using the Flask framework.
+list service using the [Flask framework](http://flask.pocoo.org/#).
 
 Users will be able to register, and use the service to create their bucketlists, with bucketlist 
 items that they will be able to edit, and update as necessary.
@@ -60,7 +61,19 @@ written in. Sample JSON data is represented as a key:value dictionary as below
 
 ### CODE STYLE
 This project is coded with adherence to [pep8](https://www.python.org/dev/peps/pep-0008/) except 
-for line length which is set at 100 characters.
+for line length which is set at 100 characters for this project.
+
+### AUTOMATED TESTING
+
+To run automated testing:
+
+* While in the project directory, run the following command:
+    `python manage.py tests`
+    
+* To find out coverage information, run:
+    `coverage report -m`
+    
+    The `-m` flag is used to show any missed lines.
     
     
 
@@ -336,11 +349,16 @@ Commit your changes: git commit -am 'Add some feature'
 Push to the branch: git push origin my-new-feature
 Submit a pull request
 
+
+## Author
+  [dmkitui](https://github.com/dmkitui)
+    
 ## Credits
 
 [Roger Taracha](https://github.com/TheDancerCodes) : For the inspiration and encouragement.
 
 [Andela Community](https://www.andela.com/) : For the opportunity to become a tech-leader.
+
 
 ## License
 
