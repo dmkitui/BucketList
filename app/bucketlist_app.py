@@ -289,7 +289,7 @@ def create_app(config_name):
         if request.method == 'DELETE':
 
             bucketlist.delete()
-            msg = 'Bucketlist No {} deleted successfully'.format(bucketlist.id)
+            msg = 'Bucketlist No {} deleted successfully'.format(bucketlist_id)
             return custom_response(msg, 200)
 
         elif request.method == 'PUT':
@@ -485,8 +485,8 @@ def create_app(config_name):
             bucketlist_obj.update({'id': current_id, 'items': items_data})
             bucketlists_details.append(bucketlist_obj)
 
-            if g.get_type == 'many':
-                bucketlists_details.append({'current_page': g.page, 'total_pages': g.total_pages})
+        if g.get_type == 'many':
+            bucketlists_details.append({'current_page': g.page, 'total_pages': g.total_pages})
 
         return jsonify(bucketlists_details)
 
