@@ -15,7 +15,7 @@ items that they will be able to edit, and update as necessary.
 It utilizes create, Read, Update update and Delete (CRUD) operations to create, read, update, 
 and delete bucketlist and bucketlist items on the server using the REST framework and JSON.
 
-###Definitions
+### Definitions
 
 **Bucketlist**- A broad wishlist of things one desires to accomplish, experience or engage in 
 before they die. This may include:
@@ -56,6 +56,11 @@ written in. Sample JSON data is represented as a key:value dictionary as below
 * Use simple and uniform interfaces.
 * Communication is done by representation.
 * Aim to be Stateless.
+
+
+### CODE STYLE
+This project is coded with adherence to [pep8](https://www.python.org/dev/peps/pep-0008/) except 
+for line length which is set at 100 characters.
     
     
 
@@ -116,9 +121,6 @@ steps:
     
     Use [Postman](https://www.getpostman.com/) to test out the various endpoint functionality 
     of this application.
-    
-    
-CODE STYLE?
 
 ## Usage
 ### Endpoints
@@ -126,7 +128,7 @@ CODE STYLE?
 Endpoint | Functionality| Public Access
 ------------ | :------------- | :-------------
 
-POST api/v1/bucketlist/auth/register | Registers a user | TRUE
+| POST api/v1/bucketlist/auth/register | Registers a user | TRUE |
 
 POST api/v1/bucketlist/auth/login |Logs a user in | TRUE
 
@@ -147,7 +149,7 @@ PUT api/v1/bucketlist/bucketlist_id/items/item_id | Updates a bucket list item |
 DELETE api/v1/bucketlists/bucketlist_id/items/item_id | Deletes an item in a bucket list | FALSE
 
 
-#### User Registration
+### 1. User Registration
 
 For a user to successfully register, a POST json with the following details is requiered:
 
@@ -163,7 +165,7 @@ Any error with the above required fields will result in an error message as show
 On successful registration, the response will be as in the screenshot below:
 
 
-#### User Login
+### 2. User Login
 
 A registered user can login into the service at this endpoint 
 
@@ -177,7 +179,7 @@ On successful login, the user will see the message below:
 
 The **access_token** will be used in subsequent bucketlist endpoints to authenticate the user.
 
-##### Authorization header field
+#### Authorization header field
 
 This is field in the request header in the form
 
@@ -186,7 +188,7 @@ eg:
 `Authorization : Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0OTk2NjM2MzIsImlhdCI6MTQ5OTY2MDYzMiwic3ViIjoxMX0.c9fzEpjf8y-iImPZGyxpQQwaVCha7ULf-LWxaZDH-S4`
 
 
-#### GET bucketlists
+### 3. Fetch bucketlists
 `GET api/v1/bucketlist/`
 
 After logging in, a user can use this endpoint to access all their bucketlists.
@@ -199,7 +201,7 @@ The response fields are:
  respectively.
  5. `current_page` and `total_pages`: The current page and number of total pages. 
  
- ##### Search
+#### Search
 
 A user can perform a search on bucketlists by including the search parameter q at this endpoint.
 
@@ -219,21 +221,16 @@ dictionary.
 
 
  
-#### POST a bucketlist
+### 4. POST a bucketlist
 `POST api/v1/bucketlist/`
 
 The required fields for a user to post a bucketlist are:
 
 **name**: Bucketlist name, eg Travel the world
-**Authorization Header**: This is a header field in the form
-
-`Authorization : Bearer + access token`
-eg:
-`Authorization : Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0OTk2NjM2MzIsImlhdCI6MTQ5OTY2MDYzMiwic3ViIjoxMX0.c9fzEpjf8y-iImPZGyxpQQwaVCha7ULf-LWxaZDH-S4`
 
 A successful POST will give the following message:
 
-#### Fetch a particular bucketlist
+### 5. Fetch a particular bucketlist
 
 `GET api/v1/bucketlist/bucketlist_id`
 
@@ -242,7 +239,7 @@ Used to get a bucketlist with id __bucketlist_id__
 This will return a response with details of the specified bucketlist id.
 
 
-#### Edit a particular bucketlist
+### 6. Edit a particular bucketlist
 
 `PUT api/v1/bucketlist/bucketlist_id`
 
@@ -250,7 +247,7 @@ Used to edit the name of  bucketlist of the given ID.
  
 On successful edit, the message is as below:
 
-#### Delete a particular bucketlist
+### 7. Delete a particular bucketlist
 
 `DELETE api/v1/bucketlist/bucketlist_id`
 
@@ -258,7 +255,7 @@ Used to delete a bucketlist with id bucketlist_id
 
 
 
-#### Add items to bucketlist
+### 8. Add items to bucketlist
 
 `POST api/v1/bucketlist/bucketlist_id/items/`
 
@@ -277,7 +274,7 @@ The json response fields are:
 3. `id`: The ID of the list item.
 4. `date_created` and `date_modified`: Date and time of creation, and modification.
 
-#### Edit item in bucketlist
+### 9. Edit item in bucketlist
 
 `PUT api/v1/bucketlist/bucketlist_id/items/item_id`
 
@@ -288,7 +285,7 @@ The required fields can be either:
 1. `item_name`: To edit the name of the item
 2. `done`: __True__ or __False__ To edit status of the item.
 
-#### Delete item in bucketlist
+### 10. Delete item in bucketlist
 
 `DELETE api/v1/bucketlist/bucketlist_id/items/item_id`
 
@@ -313,7 +310,7 @@ Submit a pull request
 
 The MIT License (MIT)
 
-Copyright (c) 2017 [DANIEL KITUI]
+Copyright (c) 2017 [dmkitui](https://github.com/dmkitui)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction, 
