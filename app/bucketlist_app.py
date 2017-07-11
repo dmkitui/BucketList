@@ -92,8 +92,11 @@ def create_app(config_name):
         db.create_all()
 
     @app.route('/')
-    def api_root():
-        return custom_response('Welcome To Bucketlists', 200)
+    def homepage():
+        """ The homepage route
+        :return: A welcome message
+        """
+        return custom_response('Welcome To Bucketlists V1', 200)
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def auth_register():
