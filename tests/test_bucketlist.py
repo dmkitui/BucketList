@@ -11,7 +11,8 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         response = self.client().get('/')
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn('Welcome To Bucketlists Version 1', str(response.data))
+        self.assertIn('Bucket List is a list of things that one has not done before but wants to '
+                      'do before dying.', str(response.data))
 
     def test_access_not_allowed(self):
         """Tests access to bucketlist not allowed to users not logged in"""
@@ -168,20 +169,20 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
     def test_edit_existing_bucketlist_items(self):
         """Test add items to bucketlist"""
 
-        response2 = self.client().put('/api/v1/bucketlists/2',
+        response2 = self.client().put('/api/v1/bucketlists/2/items/1',
                                       headers=dict(Authorization="Bearer " + self.token),
-                                      data=dict(name='Learn Good Programming Practises'))
+                                      data=dict(item_name='Live in Honduras for a year'))
 
-        self.assertEqual(response2.status_code, 200)
-        self.assertIn('Bucketlist updated', str(response2.data))
+        self.assertEqual(response2.status_code, 201)
+        self.assertIn('Name updated', str(response2.data))
 
         #  make same edits
-        response2 = self.client().put('/api/v1/bucketlists/2',
+        response2 = self.client().put('/api/v1/bucketlists/2/items/1',
                                       headers=dict(Authorization="Bearer " + self.token),
-                                      data=dict(name='Learn Good Programming Practises'))
+                                      data=dict(name='Live in Honduras for a year'))
 
         self.assertEqual(response2.status_code, 409)
-        self.assertIn('No changes made.', str(response2.data))
+        self.assertIn('No update made', str(response2.data))
 
     def test_edit_bucketlist_items_name(self):
         """Test it can edit a bucketlist item's name"""
@@ -200,7 +201,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
 
         response1 = self.client().put('/api/v1/bucketlists/1/items/1',
                                       headers=dict(Authorization="Bearer " + self.token),
-                                      data=dict(done=True))
+                                      data=dict(done='True'))
         data = json.loads(response1.data.decode())
 
         self.assertEqual(response1.status_code, 201)
