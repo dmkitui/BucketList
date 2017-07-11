@@ -96,7 +96,9 @@ def create_app(config_name):
         """ The homepage route
         :return: A welcome message
         """
-        return custom_response('Welcome To Bucketlists Version 1', 200)
+        # return custom_response('Welcome To Bucketlists Version 1', 200)
+        from flask import render_template
+        return render_template('index.html')
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def auth_register():
@@ -428,7 +430,7 @@ def create_app(config_name):
                     msg += ' Name updated '
 
             if not msg:
-                msg =  'No update made'
+                msg = 'No update made'
                 return custom_response(msg, 409)
 
             bucketlist.date_modified = datetime.now()
