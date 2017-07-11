@@ -4,6 +4,11 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2d56324e6b624ab6a30da81c23cb7851)](https://www.codacy.com/app/dmkitui/BucketList?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dmkitui/BucketList&amp;utm_campaign=Badge_Grade)
 [![pep 8](https://img.shields.io/badge/code%20style-Pep%208-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 
+
+Slate API Documentation: https://github.com/dmkitui/slate/tree/develop/source
+
+Heroku application Link: https://flask-api-bucketlist.herokuapp.com/
+
 ## BUCKET LIST API APPLICATION
 
 According to Merriam-Webster Dictionary, a Bucket List is a list of things that one has not done 
