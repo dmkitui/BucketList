@@ -10,8 +10,6 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime
 from sqlalchemy import func
 
-
-
 # initialize sql-alchemy
 db = SQLAlchemy()
 
@@ -22,6 +20,7 @@ multi_auth = MultiAuth(basic_auth, token_auth)
 
 # Local import to avoid circular import nightmares
 from .models import User, UserSchema, BucketlistItemsSchema, BucketlistsSchema
+
 
 # username and password verification
 @basic_auth.verify_password
@@ -38,6 +37,7 @@ def verify_password(user_email, user_password):
         return True
     else:
         return False
+
 
 # Token Authentication
 @token_auth.verify_token
@@ -96,7 +96,6 @@ def create_app(config_name):
         """ The homepage route
         :return: A welcome message
         """
-        # return custom_response('Welcome To Bucketlists Version 1', 200)
         from flask import render_template
         return render_template('index.html')
 

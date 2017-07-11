@@ -1,3 +1,4 @@
+import os
 from .bucketlist_app import db
 from marshmallow import Schema, fields, validates, ValidationError
 from flask_bcrypt import Bcrypt
@@ -5,6 +6,7 @@ import jwt
 from datetime import datetime, timedelta
 from instance import config
 
+token_timeout = config.app_config[os.getenv('APP_SETTINGS')].TOKEN_TIMEOUT
 
 class User(db.Model):
     """The users table"""
@@ -42,11 +44,14 @@ class User(db.Model):
         :param user_id: User's id
         :return: a user token
         """
+
         payload = {
-         'exp': datetime.utcnow() + timedelta(seconds=3000),
+         'exp': datetime.utcnow() + timedelta(seconds=int(token_timeout)),
          'iat': datetime.utcnow(),  # Time the jwt was made
          'sub': user_id  # Subject of the payload
         }
+        print(token_timeout)
+
         jwt_string = jwt.encode(payload, config.Config.SECRET, algorithm='HS256')
         return jwt_string
 
