@@ -6,6 +6,13 @@ from . import base_test
 class BucketListEndpoints(base_test.BaseBucketListCase):
     """The bucketlist manipulation tests"""
 
+    def test_homepage(self):
+        """Test the application home root"""
+        response = self.client().get('/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Welcome To Bucketlists Version 1', str(response.data))
+
     def test_access_not_allowed(self):
         """Tests access to bucketlist not allowed to users not logged in"""
         response = self.client().get('/api/v1/bucketlists/')
