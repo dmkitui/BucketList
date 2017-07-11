@@ -5,7 +5,7 @@
 [![pep 8](https://img.shields.io/badge/code%20style-Pep%208-green.svg)](https://www.python.org/dev/peps/pep-0008/)
 
 
-Slate API Documentation: https://github.com/dmkitui/slate/tree/develop/source
+API Documentation: [Bucketlist-Flask-API](https://dmkitui.github.io/slate/)
 
 Heroku application Link: https://flask-api-bucketlist.herokuapp.com/
 
