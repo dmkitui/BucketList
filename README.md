@@ -7,7 +7,8 @@
 
 API Documentation: [Bucketlist-Flask-API](https://dmkitui.github.io/slate/)
 
-Heroku application Link: https://flask-api-bucketlist.herokuapp.com/
+This API is live on [Heroku](https://flask-api-bucketlist.herokuapp.com/)
+
 
 ## BUCKET LIST API APPLICATION
 
