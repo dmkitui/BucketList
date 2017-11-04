@@ -9,6 +9,8 @@ from instance import config
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from sqlalchemy import func
+from flask_cors import CORS  # This is the magic
+
 
 # initialize sql-alchemy
 db = SQLAlchemy()
@@ -76,6 +78,7 @@ def create_app(config_name):
     from app.models import Bucketlists, BucketListItems
 
     app = FlaskAPI(__name__, instance_relative_config=True)
+    CORS(app)
 
     # Preload configurations from app_config object
     app.config.from_object(app_config[config_name])
