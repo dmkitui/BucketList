@@ -17,8 +17,8 @@ manager.add_command('db', MigrateCommand)
 # Testing command
 @manager.command
 def test():
-    '''Runs the unittest'''
-
+    """Runs the unittest"""
+    os.environ['APP_SETTINGS'] = "testing"
     os.system('nosetests --with-coverage --cover-erase --cover-package=app')
 
 if __name__ == '__main__':

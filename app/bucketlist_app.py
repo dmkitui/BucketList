@@ -9,7 +9,7 @@ from instance import config
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from sqlalchemy import func
-
+from flask_cors import CORS  # This is the magic
 
 
 # initialize sql-alchemy
@@ -22,6 +22,7 @@ multi_auth = MultiAuth(basic_auth, token_auth)
 
 # Local import to avoid circular import nightmares
 from .models import User, UserSchema, BucketlistItemsSchema, BucketlistsSchema
+
 
 # username and password verification
 @basic_auth.verify_password
@@ -38,6 +39,7 @@ def verify_password(user_email, user_password):
         return True
     else:
         return False
+
 
 # Token Authentication
 @token_auth.verify_token
@@ -76,6 +78,7 @@ def create_app(config_name):
     from app.models import Bucketlists, BucketListItems
 
     app = FlaskAPI(__name__, instance_relative_config=True)
+    CORS(app)
 
     # Preload configurations from app_config object
     app.config.from_object(app_config[config_name])
@@ -90,6 +93,14 @@ def create_app(config_name):
     # Create database tables, if they dont exist and tie the db to the app context
     with app.app_context():
         db.create_all()
+
+    @app.route('/')
+    def homepage():
+        """ The homepage route
+        :return: A welcome message
+        """
+        from flask import render_template
+        return render_template('index.html')
 
     @app.route('/api/v1/auth/register', methods=['POST'])
     def auth_register():
@@ -195,7 +206,7 @@ def create_app(config_name):
             output, error = BucketlistsSchema().dump(obj)
 
             bucketlist_id = len(list(bucketlists)) + 1
-            output.update({'id': bucketlist_id})
+            # output.update({'id': bucketlist_id})
             response = jsonify(output)
             response.headers['Location'] = (str(request.url_root) + 'api/v1/bucketlists/' +
                                             str(bucketlist_id))
@@ -230,9 +241,10 @@ def create_app(config_name):
                     return custom_response('No bucketlists with provided search parameter', 404)
 
             else:
-                bucketlists = Bucketlists.query.filter_by(owner_id=g.user.id).paginate(page,
-                                                                                       limit,
-                                                                                       False)
+                bucketlists = Bucketlists.query\
+                    .filter_by(owner_id=g.user.id)\
+                    .order_by(Bucketlists.id)\
+                    .paginate(page, limit, False)
                 if not bucketlists.items:
                     return custom_response('No bucketlists available', 200)
 
@@ -240,6 +252,7 @@ def create_app(config_name):
             g.total_pages = bucketlists.pages
 
             response = bucketlist_data(bucketlists.items)
+
             # Link for the next, previous and last pages, if they exist
             link = ''
             if bucketlists.has_prev:
@@ -276,20 +289,19 @@ def create_app(config_name):
         if bucketlist_id < 1:
             msg = 'Bucketlist ID should be greater than or equal to 1'
             return custom_response(msg, 400)
-
         user_bucketlists = g.user.bucketlists
+        current_bucketlist_names = [bucketlist.name for bucketlist in user_bucketlists]
 
         try:
-            bucketlist = user_bucketlists[bucketlist_id - 1]
+            bucketlist = [x for x in user_bucketlists if x.id == bucketlist_id][0]
             g.bucketlist_id = bucketlist_id
         except IndexError:
             msg = 'That bucketlist item does not exist'
             return custom_response(msg, 404)
 
         if request.method == 'DELETE':
-
             bucketlist.delete()
-            msg = 'Bucketlist No {} deleted successfully'.format(bucketlist.id)
+            msg = 'Bucketlist No {} deleted successfully'.format(bucketlist_id)
             return custom_response(msg, 200)
 
         elif request.method == 'PUT':
@@ -302,7 +314,6 @@ def create_app(config_name):
             except KeyError:
                 return custom_response('Update name not given', 400)
 
-            current_bucketlist_names = [bucketlist.name for bucketlist in user_bucketlists]
             if name == bucketlist.name:
                 return custom_response('No changes made.', 409)
 
@@ -310,10 +321,9 @@ def create_app(config_name):
                 return custom_response('Bucketlist name with specified name already exists', 409)
 
             bucketlist.name = name
-            bucketlist.date_modified = datetime.now()
             bucketlist.save()
             response, error = BucketlistsSchema().dump(bucketlist)
-            response.update({'message': 'Bucketlist updated', 'id': bucketlist_id})
+            response.update({'message': 'Bucketlist updated'})
 
             return response, 200
 
@@ -332,7 +342,7 @@ def create_app(config_name):
         user_bucketlists = g.user.bucketlists
 
         try:
-            bucketlist = user_bucketlists[(bucketlist_id - 1)]
+            bucketlist = [bucketlist for bucketlist in user_bucketlists if bucketlist.id == bucketlist_id][0]
         except IndexError:
             return custom_response('That bucketlist does not exist', 404)
 
@@ -421,7 +431,7 @@ def create_app(config_name):
                     msg += ' Name updated '
 
             if not msg:
-                msg =  'No update made'
+                msg = 'No update made'
                 return custom_response(msg, 409)
 
             bucketlist.date_modified = datetime.now()
@@ -474,19 +484,14 @@ def create_app(config_name):
                 for y in range(len(list(items))):
                     item = items[y]
                     item_data, error = BucketlistItemsSchema().dump(item)
-                    item_data.update({'id': y + 1, 'bucketlist_id': x + 1})
                     items_data.append(item_data)
 
             bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
-            if g.get_type == 'many':
-                current_id = x+1
-            else:
-                current_id = g.bucketlist_id
-            bucketlist_obj.update({'id': current_id, 'items': items_data})
+            bucketlist_obj.update({'items': items_data})
             bucketlists_details.append(bucketlist_obj)
 
-            if g.get_type == 'many':
-                bucketlists_details.append({'current_page': g.page, 'total_pages': g.total_pages})
+        if g.get_type == 'many':
+            bucketlists_details.append({'current_page': g.page, 'total_pages': g.total_pages})
 
         return jsonify(bucketlists_details)
 

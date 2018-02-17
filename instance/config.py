@@ -7,6 +7,7 @@ class Config(object):
     CSRF_ENABLED = True
     SECRET = os.getenv('SECRET')
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
+    TOKEN_TIMEOUT = 3000
 
 
 class DevelopmentConfig(Config):
@@ -19,6 +20,7 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/test_db'
     DEBUG = True
+    TOKEN_TIMEOUT = 3
 
 
 class StagingConfig(Config):
@@ -30,6 +32,7 @@ class ProductionConfig(Config):
     """Configurations for Production."""
     DEBUG = False
     TESTING = False
+
 
 app_config = {
     'development': DevelopmentConfig,
