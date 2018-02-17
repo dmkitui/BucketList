@@ -1,4 +1,5 @@
 from . import base_test
+import time
 
 class UsersModelTestCase(base_test.BaseTestCase):
     '''Testcase for the users model'''
@@ -104,5 +105,19 @@ class UsersModelTestCase(base_test.BaseTestCase):
         response2 = self.client().post('/api/v1/bucketlists/',
                                        headers=dict(Authorization="Bearer " + token),
                                        data=dict(name='Learn Programming'))
+
+        self.assertEqual(response2.status_code, 401)
+
+    def test_expired_toke(self):
+        """Tests for an expired token"""
+        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+
+        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        # Get the token
+        token = response['access_token']
+
+        time.sleep(10)
+        response2 = self.client().get('/api/v1/bucketlists/',
+                                      headers=dict(Authorization="Bearer " + token))
 
         self.assertEqual(response2.status_code, 401)
