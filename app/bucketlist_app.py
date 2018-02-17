@@ -155,7 +155,7 @@ def create_app(config_name):
     @app.route('/api/v1/auth/login', methods=['POST'])
     def auth_login():
         """Route for Login"""
-        data, error = UserSchema(partial=('confirm_password',)).load(request.data)
+        data, error = UserSchema(partial=('confirm_password', 'username')).load(request.data)
         if error:
             return error, 400
 
