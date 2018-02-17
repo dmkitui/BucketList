@@ -484,14 +484,9 @@ def create_app(config_name):
                 for y in range(len(list(items))):
                     item = items[y]
                     item_data, error = BucketlistItemsSchema().dump(item)
-                    # item_data.update({'id': y + 1, 'bucketlist_id': x + 1})
                     items_data.append(item_data)
 
             bucketlist_obj, error = BucketlistsSchema().dump(bucketlist)
-            if g.get_type == 'many':
-                current_id = x+1
-            else:
-                current_id = g.bucketlist_id
             bucketlist_obj.update({'items': items_data})
             bucketlists_details.append(bucketlist_obj)
 
