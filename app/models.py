@@ -8,6 +8,7 @@ from instance import config
 
 token_timeout = config.app_config[os.getenv('APP_SETTINGS')].TOKEN_TIMEOUT
 
+
 class User(db.Model):
     """The users table"""
 
@@ -16,13 +17,17 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_email = db.Column(db.String(256), nullable=False, unique=True)
     user_password = db.Column(db.String(256), nullable=False)
+    username = db.Column(db.String(32), unique=True, nullable=True)
     date_registered = db.Column(db.DateTime, default=db.func.now())
     bucketlists = db.relationship('Bucketlists')
-    def __init__(self, user_email, user_password):
+    avatar_url = db.Column(db.String(256), nullable=True)
+
+    def __init__(self, user_email, user_password, username):
         """Initialize user with details"""
 
         self.user_email = user_email
         self.user_password = Bcrypt().generate_password_hash(user_password).decode()
+        self.username = username
 
     def password_validator(self, user_password):
         """
@@ -38,7 +43,7 @@ class User(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def generate_user_token(self, user_id):
+    def generate_user_token(self, user):
         """
         Method to generate a unique user token for authentication.
         :param user_id: User's id
@@ -48,7 +53,9 @@ class User(db.Model):
         payload = {
          'exp': datetime.utcnow() + timedelta(seconds=int(token_timeout)),
          'iat': datetime.utcnow(),  # Time the jwt was made
-         'sub': user_id  # Subject of the payload
+         'sub': user.id,  # User information
+         'avatar': user.avatar_url,
+         'username': user.username
         }
         print(token_timeout)
 
@@ -72,6 +79,7 @@ class UserSchema(Schema):
                                error_messages={'required': 'Password not provided'})
     confirm_password = fields.Str(required=True,
                                   error_messages={'required': 'Confirmation password not provided'})
+    username = fields.Str(required=True, error_messages={'required': 'Username not provided'})
 
 
 class BucketlistBaseModel(db.Model):

@@ -19,7 +19,7 @@ class BaseTestCase(unittest.TestCase):
             db.create_all()  # create the tables
 
     # Helper methods
-    def user_registration(self, email, password, confirm_password):
+    def user_registration(self, email, password, confirm_password, username):
         """
         Helper method to register a new user
         :param email: user email address
@@ -30,11 +30,12 @@ class BaseTestCase(unittest.TestCase):
         response = self.client().post('/api/v1/auth/register', data=dict(user_email=email,
                                                                          user_password=password,
                                                                          confirm_password=confirm_password,
+                                                                         username=username,
                                                                          follow_redirects=True))
 
         return json.loads(response.data.decode()), response.status_code
 
-    def user_login(self, email, password):
+    def user_login(self, email, password, username):
         """
         Helper method to login a user
         :param email: user email
@@ -44,6 +45,7 @@ class BaseTestCase(unittest.TestCase):
 
         response = self.client().post('/api/v1/auth/login', data=dict(user_email=email,
                                                                       user_password=password,
+                                                                      username=username,
                                                                       follow_redirects=True))
 
         return json.loads(response.data.decode()), response.status_code
@@ -76,10 +78,10 @@ class BaseBucketListCase(BaseTestCase):
             db.create_all()  # create the tables
 
         # Register a default user
-        self.user_registration('dan@example.org', 'StrongPwd76', 'StrongPwd76')
+        self.user_registration('example@example.org', 'StrongPwd76', 'StrongPwd76', 'alphadog')
 
         # Login the default user
-        response, status_code = self.user_login('dan@example.org', 'StrongPwd76')
+        response, status_code = self.user_login('example@example.org', 'StrongPwd76', 'username')
         # Get the token
         self.token = response['access_token']
 

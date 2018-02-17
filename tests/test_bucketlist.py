@@ -88,8 +88,8 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         """test get when no buckelist exists"""
 
         # Create new user with no bucketlists
-        self.user_registration('daniel@example.org', 'StrongPwd76', 'StrongPwd76')
-        response, status_code = self.user_login('daniel@example.org', 'StrongPwd76')
+        self.user_registration('daniel@example.org', 'StrongPwd76', 'StrongPwd76', 'username')
+        response, status_code = self.user_login('daniel@example.org', 'StrongPwd76', 'username')
 
         token = response['access_token']
 

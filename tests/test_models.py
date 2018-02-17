@@ -16,9 +16,10 @@ class ModelsTests(unittest.TestCase):
         self.app = bucketlist_app.create_app(config_name='testing')
         self.client = self.app.test_client
 
-        self.user_email = 'dan@example.org'
+        self.user_email = 'test@example.org'
         self.user_password = 'password0122'
-        self.person = User(self.user_email, self.user_password)
+        self.username = 'alphadog22'
+        self.person = User(self.user_email, self.user_password, self.username)
 
         self.cntx = self.app.app_context() # Bind the app to current context
         self.cntx.push()
@@ -41,8 +42,8 @@ class ModelsTests(unittest.TestCase):
     def test_query_user_by_email(self):
         '''Test for the User model'''
         self.person.save()
-        person_obj = User.query.filter_by(user_email='dan@example.org').first()
-        self.assertTrue(person_obj.user_email == 'dan@example.org')
+        person_obj = User.query.filter_by(user_email='test@example.org').first()
+        self.assertTrue(person_obj.user_email == 'test@example.org')
 
     def test_query_user_by_id(self):
         '''Test it ca nget a user given the user's id'''
