@@ -112,6 +112,7 @@ def create_app(config_name):
             return error, 400
 
         user_email = data['user_email']
+        username = data['username'] if data['username'] else ''
         user_password = data['user_password']
         confirm_password = data['confirm_password']
 
@@ -133,7 +134,7 @@ def create_app(config_name):
                       'an uppercase letter, and a digit'
                 return custom_response(msg, 400)
 
-            new_user = User(user_email=user_email, user_password=user_password)
+            new_user = User(user_email=user_email, user_password=user_password, username=username)
             new_user.save()
             response, error = UserSchema().dump(new_user)
             response.update({'message':'Registration successful, welcome to Bucketlist'})
@@ -168,7 +169,7 @@ def create_app(config_name):
             return custom_response(msg, 401)
         else:
             if user and user.password_validator(user_password):
-                access_token = user.generate_user_token(user.id)
+                access_token = user.generate_user_token(user)
                 if access_token:
                     response = jsonify({
                         'message': 'Login successful',
