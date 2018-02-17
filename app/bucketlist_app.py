@@ -106,15 +106,19 @@ def create_app(config_name):
     def auth_register():
         """Route for new users to register for the service"""
 
-        data, error = UserSchema().load(request.data)
+        data, error = UserSchema(partial=('username')).load(request.data)
+        print('DATA: ', data, 'DATA: ', request.data, 'ERROR: ', error)
 
         if error:
             return error, 400
 
         user_email = data['user_email']
-        username = data['username'] if data['username'] else ''
         user_password = data['user_password']
         confirm_password = data['confirm_password']
+        try:
+            username = data['username']
+        except KeyError:
+            username = None
 
         user = User.query.filter_by(user_email=user_email).first()
 
@@ -136,7 +140,7 @@ def create_app(config_name):
 
             new_user = User(user_email=user_email, user_password=user_password, username=username)
             new_user.save()
-            response, error = UserSchema().dump(new_user)
+            response, error = UserSchema(partial='username').dump(new_user)
             response.update({'message':'Registration successful, welcome to Bucketlist'})
 
             return response, 201

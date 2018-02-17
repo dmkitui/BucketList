@@ -79,7 +79,7 @@ class UserSchema(Schema):
                                error_messages={'required': 'Password not provided'})
     confirm_password = fields.Str(required=True,
                                   error_messages={'required': 'Confirmation password not provided'})
-    username = fields.Str(required=True, error_messages={'required': 'Username not provided'})
+    username = fields.Str()
 
 
 class BucketlistBaseModel(db.Model):
