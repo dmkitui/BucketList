@@ -77,9 +77,10 @@ class UserSchema(Schema):
                               error_messages={'required': 'Email address not provided'})
     user_password = fields.Str(required=True, load_only=True,
                                error_messages={'required': 'Password not provided'})
-    confirm_password = fields.Str(required=True,
+    confirm_password = fields.Str(required=True, load_only=True,
                                   error_messages={'required': 'Confirmation password not provided'})
     username = fields.Str()
+    avatar_url = fields.Str()
 
 
 class BucketlistBaseModel(db.Model):
