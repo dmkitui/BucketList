@@ -106,8 +106,7 @@ def create_app(config_name):
     def auth_register():
         """Route for new users to register for the service"""
 
-        data, error = UserSchema(partial=('username')).load(request.data)
-        print('DATA: ', data, 'DATA: ', request.data, 'ERROR: ', error)
+        data, error = UserSchema(partial=('username', 'avatar_url')).load(request.data)
 
         if error:
             return error, 400
@@ -140,7 +139,7 @@ def create_app(config_name):
 
             new_user = User(user_email=user_email, user_password=user_password, username=username)
             new_user.save()
-            response, error = UserSchema(partial='username').dump(new_user)
+            response, error = UserSchema().dump(new_user)
             response.update({'message':'Registration successful, welcome to Bucketlist'})
 
             return response, 201
@@ -159,7 +158,7 @@ def create_app(config_name):
     @app.route('/api/v1/auth/login', methods=['POST'])
     def auth_login():
         """Route for Login"""
-        data, error = UserSchema(partial=('confirm_password', 'username')).load(request.data)
+        data, error = UserSchema(partial=('confirm_password', 'username', 'avatar_url')).load(request.data)
         if error:
             return error, 400
 
@@ -185,6 +184,45 @@ def create_app(config_name):
             else:
                 msg = 'Incorrect email or password'
                 return custom_response(msg, 401)
+
+    @app.route('/api/v1/auth/update', methods=['POST'])
+    @multi_auth.login_required
+    def auth_update():
+        """Route for updating user info"""
+        data, error = UserSchema(partial=('user_password', 'user_email', 'confirm_password', 'username', 'avatar_url')).load(request.data)
+        print('DATA: ', data, ' ERRORS: ', error)
+
+        if error:
+            return error, 400
+
+        try:
+            username = data['username']
+        except KeyError:
+            username = None
+
+        try:
+            avatar_url = data['avatar_url']
+        except KeyError:
+            avatar_url = None
+
+        if username or avatar_url:
+            if username:
+                g.user.username = username
+
+            if avatar_url:
+                g.user.avatar_url = avatar_url
+        else:
+            return custom_response('No update supplied', 400)
+
+        try:
+            g.user.save()
+        except:
+            return custom_response('Username Chosen is already taken. Try another one', 400)
+
+        response, error = UserSchema().dump(g.user)
+        response.update({'message':'Update successful'})
+
+        return response, 201
 
     @app.route('/api/v1/bucketlists/', methods=['GET', 'POST'])
     @multi_auth.login_required
