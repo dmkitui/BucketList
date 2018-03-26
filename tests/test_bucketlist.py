@@ -169,7 +169,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
     def test_edit_existing_bucketlist_items(self):
         """Test add items to bucketlist"""
 
-        response2 = self.client().put('/api/v1/bucketlists/2/items/1',
+        response2 = self.client().put('/api/v1/bucketlists/2/items/2',
                                       headers=dict(Authorization="Bearer " + self.token),
                                       data=dict(item_name='Live in Honduras for a year'))
 
@@ -177,7 +177,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         self.assertIn('Name updated', str(response2.data))
 
         #  make same edits
-        response2 = self.client().put('/api/v1/bucketlists/2/items/1',
+        response2 = self.client().put('/api/v1/bucketlists/2/items/2',
                                       headers=dict(Authorization="Bearer " + self.token),
                                       data=dict(name='Live in Honduras for a year'))
 
@@ -188,7 +188,7 @@ class BucketListEndpoints(base_test.BaseBucketListCase):
         """Test it can edit a bucketlist item's name"""
 
         # Edit bucketlist 2 item number 1
-        response4 = self.client().put('/api/v1/bucketlists/2/items/1',
+        response4 = self.client().put('/api/v1/bucketlists/1/items/1',
                                       headers=dict(Authorization="Bearer " + self.token),
                                       data=dict(item_name='Python fundamentals and syntax'))
         data = json.loads(response4.data.decode())
