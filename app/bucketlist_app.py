@@ -405,17 +405,9 @@ def create_app(config_name):
         new_item.save()
         bucketlist.date_modified = datetime.now()
         bucketlist.save()
-
         output, error = BucketlistItemsSchema().dump(new_item)
 
-        list_id = len(list(items)) + 1
-        output.update({'id': list_id, 'bucketlist_id': bucketlist_id})
         response = jsonify(output)
-
-        response.headers['Location'] = (str(request.url_root) +
-                                        'api/v1/bucketlists/{}/items/{}'
-                                        .format(str(bucketlist_id), str(list_id)))
-
         return response, 201
 
     @app.route('/api/v1/bucketlists/<int:bucketlist_id>/items/<item_id>', methods=['PUT',
