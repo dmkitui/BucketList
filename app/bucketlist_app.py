@@ -384,8 +384,9 @@ def create_app(config_name):
 
         user_bucketlists = g.user.bucketlists
 
-        bucketlist = [bucketlist for bucketlist in user_bucketlists if bucketlist.id == bucketlist_id][0]
-        if not bucketlist:
+        try:
+            bucketlist = [bucketlist for bucketlist in user_bucketlists if bucketlist.id == bucketlist_id][0]
+        except IndexError:
             return custom_response('That bucketlist does not exist', 404)
 
         items = bucketlist.bucketlist_items
@@ -427,15 +428,15 @@ def create_app(config_name):
 
         user_bucketlists = g.user.bucketlists
 
-        bucketlist = [bucketlist for bucketlist in user_bucketlists if bucketlist.id == bucketlist_id][0]
-        if not bucketlist:
+        try:
+            bucketlist = [bucketlist for bucketlist in user_bucketlists if bucketlist.id == bucketlist_id][0]
+        except IndexError:
             return custom_response('That bucketlist does not exist', 404)
 
         items = bucketlist.bucketlist_items
 
         try:
-            item = items[int(item_id)-1]
-
+            item = [item for item in items if item.id == item_id][0]
         except IndexError:
             return custom_response('That bucketlist item does not exist', 404)
 
