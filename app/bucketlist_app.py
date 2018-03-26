@@ -190,7 +190,6 @@ def create_app(config_name):
     def auth_update():
         """Route for updating user info"""
         data, error = UserSchema(partial=('user_password', 'user_email', 'confirm_password', 'username', 'avatar_url')).load(request.data)
-        print('DATA: ', data, ' ERRORS: ', error)
 
         if error:
             return error, 400
@@ -385,7 +384,7 @@ def create_app(config_name):
         user_bucketlists = g.user.bucketlists
 
         try:
-            bucketlist = [bucketlist for bucketlist in user_bucketlists if bucketlist.id == bucketlist_id][0]
+            bucketlist = [bucketlist for bucketlist in user_bucketlists if bucketlist.id == int(bucketlist_id)][0]
         except IndexError:
             return custom_response('That bucketlist does not exist', 404)
 
@@ -436,7 +435,7 @@ def create_app(config_name):
         items = bucketlist.bucketlist_items
 
         try:
-            item = [item for item in items if item.id == item_id][0]
+            item = [item for item in items if item.id == int(item_id)][0]
         except IndexError:
             return custom_response('That bucketlist item does not exist', 404)
 
