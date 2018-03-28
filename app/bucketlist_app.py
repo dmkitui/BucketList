@@ -473,7 +473,7 @@ def create_app(config_name):
             response, error = BucketlistItemsSchema().dump(item)
 
             response['message'] = '{}. Item {} successfully updated'.format(msg, item_id)
-            response.update({'id': bucketlist_id})
+            # response.update({'id': bucketlist_id})
 
             return response, 201
 
